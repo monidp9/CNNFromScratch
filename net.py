@@ -4,8 +4,8 @@ import numpy as np
 class Net:
     def __init__(self, hidden_layers_num, nodes_num, activation_functions,
                  error_function):
-        self.input_nodes_num = 3 # dipende dal dataset
-        self.output_nodes_num = 3 # dipende dal dataset
+        self.input_nodes_num = 784 # dipende dal dataset
+        self.output_nodes_num = 10 # dipende dal dataset
         self.layers_num = hidden_layers_num + 1
         self.error_function = error_function
 

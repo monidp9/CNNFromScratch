@@ -7,7 +7,7 @@ class NotNumberError(Exception):
         return repr(self.value)
 
 def types_of_activation_functions():
-    print('\n   Type of activation function:')
+    print('\n   Types of activation functions:')
     print('   1] sigmoid')
     print('   2] identity')
     print('   3] ReLU\n')
@@ -36,6 +36,10 @@ def get_int_input(string, min_value) :
 def get_activation_functions(num):
     print('scegliere funzione')
 
+def types_of_error_functions(): 
+    print('\n   Types of error functions:')
+    print('   1] Cross Entropy')
+
 
 def get_configuration_net():
     print('\n\n\n')
@@ -45,25 +49,26 @@ def get_configuration_net():
 
     n_hidden_layers = get_int_input('define the number of hidden layers (min value = 1): ',1)
 
-    print('\nfor each hidden layer define the number of internal nodes and the activation functions.\n')
+    print('\nfor each hidden layer define the number of internal nodes and the activation functions.')
 
     n_nodes_hidden_layers = np.ndarray(int(n_hidden_layers), dtype=int)
     types_of_activation_functions_hidden_layers = np.ndarray(int(n_hidden_layers), dtype=int)
+    
+    types_of_activation_functions()
 
     for i in range(n_hidden_layers): 
         print('hidden layer ',i+1,':')
     
         n_nodes=get_int_input('-  number of nodes: ',1)
 
-        types_of_activation_functions()
-
         function = get_int_input('-  choose function: ',1)
         n_nodes_hidden_layers[i] = n_nodes
         types_of_activation_functions_hidden_layers[i] = function
         
         print('\n')
-
-    types_of_activation_functions()
+    
+    types_of_error_functions()
+    print('output layer ',i+1,':')
     error_function = get_int_input('define the error function: ',1)
 
     return n_hidden_layers, n_nodes_hidden_layers, types_of_activation_functions_hidden_layers, error_function

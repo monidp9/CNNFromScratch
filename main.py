@@ -5,12 +5,17 @@ import matplotlib.pyplot as plt
 from net import Net
 from mnist import MNIST
 
+<<<<<<< HEAD
 def identity(x):
     return x
 
 
 mndata = MNIST('./python-mnist/data')
 images, labels = mndata.load_training()
+=======
+# mndata = MNIST('./python-mnist/data')
+# images, labels = mndata.load_training()
+>>>>>>> e96108e937076f1fe4bf13082e1bd43525e61bd8
 
 # utility.get_configuration_net()
 

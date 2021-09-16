@@ -1,4 +1,8 @@
 import numpy as np 
+import sys 
+
+n_activation_functions = 3
+n_error_functions = 2
 
 class NotNumberError(Exception):
     def __init__(self, value):
@@ -12,24 +16,24 @@ def types_of_activation_functions():
     print('   2] identity')
     print('   3] ReLU\n')
 
-def check_int_input(value, min_value):
+def check_int_input(value, min_value,max_value):
     if not value.isnumeric():
         raise NotNumberError(value)  
-    if not int(value) >= min_value: 
+    if not int(value) >= min_value or not int(value) <= max_value: 
         raise ValueError
 
-def get_int_input(string, min_value) :
+def get_int_input(string, min_value, max_value=sys.maxsize) :
     flag = False
     value = None
     while not flag :
         try :
             value = input(string)
-            check_int_input(value, min_value)
+            check_int_input(value, min_value, max_value)
             flag = True
         except ValueError: 
             print('invalid number!')
         except NotNumberError as e:
-            print('invalid value, "',e.value,'" is not a number!')   
+            print('invalid value, input must be a positive number!')   
 
     return int(value)
  
@@ -37,9 +41,10 @@ def get_activation_functions(num):
     print('scegliere funzione')
 
 def types_of_error_functions(): 
+    
     print('\n   Types of error functions:')
     print('   1] Cross Entropy')
-
+    print('   2] Sum of Squares\n')
 
 def get_configuration_net():
     print('\n\n\n')
@@ -61,14 +66,15 @@ def get_configuration_net():
     
         n_nodes=get_int_input('-  number of nodes: ',1)
 
-        function = get_int_input('-  choose function: ',1)
+        function = get_int_input('-  choose activaction function: ',1, n_activation_functions)
         n_nodes_hidden_layers[i] = n_nodes
         types_of_activation_functions_hidden_layers[i] = function
         
         print('\n')
     
+    print('output layer :')
     types_of_error_functions()
-    print('output layer ',i+1,':')
-    error_function = get_int_input('define the error function: ',1)
+   
+    error_function = get_int_input('-  define the error function: ',1, n_error_functions)
 
     return n_hidden_layers, n_nodes_hidden_layers, types_of_activation_functions_hidden_layers, error_function

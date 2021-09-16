@@ -1,24 +1,9 @@
-from net import Net
-import numpy as np
+import utility
+from mnist import MNIST
 
+mndata = MNIST('./python-mnist/data')
+images, labels = mndata.load_training()
 
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
+utility.get_configuration_net()
 
-def identity(x):
-    return x
-
-def sum_of_square():
-    pass
-
-
-net = Net(hidden_layers_num=1,
-          nodes_num=[2],
-          activation_functions=[sigmoid, identity],
-          error_function=sum_of_square)
-
-
-x = np.random.normal(size=(5, 3))
-layer_input, layer_output = net.forwardStep(x)
-
-print(layer_input[1])
+print('\n\n\n')

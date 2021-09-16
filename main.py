@@ -1,3 +1,9 @@
-import numpy as np
+import utility 
+from mnist import MNIST
 
-print(np.array([1,2,3]))
+mndata = MNIST('./python-mnist/data')
+images, labels = mndata.load_training()
+
+utility.get_configuration_net()
+
+print('\n\n\n')

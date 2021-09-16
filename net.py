@@ -68,4 +68,4 @@ class Net:
 
             layer_output.append(self.activation_functions_per_layer[i](layer_input[i]))
 
-        return layer_output[i]
+        return layer_input, layer_output

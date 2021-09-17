@@ -1,3 +1,4 @@
+from learning import back_progagation
 import utility
 import numpy as np
 import matplotlib.pyplot as plt
@@ -5,32 +6,25 @@ import matplotlib.pyplot as plt
 from net import Net
 from mnist import MNIST
 
-<<<<<<< HEAD
-def identity(x):
-    return x
-
-
 mndata = MNIST('./python-mnist/data')
 images, labels = mndata.load_training()
-=======
-# mndata = MNIST('./python-mnist/data')
-# images, labels = mndata.load_training()
->>>>>>> e96108e937076f1fe4bf13082e1bd43525e61bd8
 
 # utility.get_configuration_net()
 
 image = images[0]
+label = labels[0]
 image = np.array(image)
 
+def identity(x):
+    return x
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
 
 # creazione rete
 net = Net(hidden_layers_num=1,
           nodes_num=[3],
-          activation_functions=[identity, identity],
+          activation_functions=[sigmoid, identity],
           error_function=[identity])
 
-x = image.reshape(1, -1)
-
-input, output = net.forwardStep(x)
-
-print(output)
+back_progagation(net,image,label)

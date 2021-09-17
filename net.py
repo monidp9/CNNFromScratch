@@ -4,12 +4,12 @@ import numpy as np
 class Net:
     def __init__(self, hidden_layers_num, nodes_num, activation_functions,
                  error_function):
-        self.input_nodes_num = 784 # dipende dal dataset
-        self.output_nodes_num = 10 # dipende dal dataset
-        self.layers_num = hidden_layers_num + 1
+        self.n_input_nodes = 784 # dipende dal dataset
+        self.n_output_nodes = 10 # dipende dal dataset
+        self.n_layers = hidden_layers_num + 1
         self.error_function = error_function
 
-        self.nodes_num_per_layer = list()
+        self.nodes_per_layer = list()
         self.activation_functions_per_layer = list()
         self.weights = list()
         self.bias = list()
@@ -20,17 +20,17 @@ class Net:
 
 
     def __set_nodes_number_per_layer(self, nodes_num):
-        if len(nodes_num) != self.layers_num - 1:
+        if len(nodes_num) != self.n_layers - 1:
             raise Exception("The number of nodes specified doesn't match with "
             "the number of hidden layers")
 
         for i in range(len(nodes_num)):
-            self.nodes_num_per_layer.append(nodes_num[i])
-        self.nodes_num_per_layer.append(self.output_nodes_num)
+            self.nodes_per_layer.append(nodes_num[i])
+        self.nodes_per_layer.append(self.n_output_nodes)
 
 
     def __set_activation_functions_per_layer(self, functions):
-        if len(functions) != self.layers_num:
+        if len(functions) != self.n_layers:
             raise Exception("The number of activation functions doesn't match "
                              "with the number of layers")
 
@@ -39,24 +39,24 @@ class Net:
 
 
     def __initialize_weights_and_bias(self):
-        for i in range(self.layers_num):
+        for i in range(self.n_layers):
             if i == 0:
                 self.weights.append(np.random.normal(
-                                        size=(self.nodes_num_per_layer[i],
-                                              self.input_nodes_num)))
+                                        size=(self.nodes_per_layer[i],
+                                              self.n_input_nodes)))
             else:
                 self.weights.append(np.random.normal(
-                                        size=(self.nodes_num_per_layer[i],
-                                              self.nodes_num_per_layer[i-1])))
+                                        size=(self.nodes_per_layer[i],
+                                              self.nodes_per_layer[i-1])))
 
-            self.bias.append(np.random.normal(size=(self.nodes_num_per_layer[i], 1)))
+            self.bias.append(np.random.normal(size=(self.nodes_per_layer[i], 1)))
 
 
     def forwardStep(self, x):
         layer_input = list()
         layer_output = list()
 
-        for i in range(self.layers_num):
+        for i in range(self.n_layers):
             if i == 0:
                 # calcolo input dei nodi del primo strato nascosto
                 layer_input.append(np.dot(self.weights[i], np.transpose(x)) \

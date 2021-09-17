@@ -1,11 +1,12 @@
+from functions import identity
 import numpy as np
 import functions as fun
 
 
 class Net:
     def __init__(self, n_hidden_layers, n_hidden_nodes_per_layer, act_fun_codes, error_fun_code):
-        self.n_input_nodes = 784 # dipende dal dataset: 784
-        self.n_output_nodes = 10 # dipende dal dataset: 10
+        self.n_input_nodes = 2 # dipende dal dataset: 784
+        self.n_output_nodes = 2 # dipende dal dataset: 10
         self.n_layers = n_hidden_layers + 1
 
         self.error_fun = fun.error_functions[error_fun_code]
@@ -24,7 +25,8 @@ class Net:
         self.bias = list()
 
         self.__initialize_weights_and_bias()
-
+        self.activation_function_deriv = identity
+        self.error_function_deriv = identity
 
     def __initialize_weights_and_bias(self):
         for i in range(self.n_layers):

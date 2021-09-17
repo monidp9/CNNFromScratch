@@ -1,27 +1,37 @@
+import numpy as np
+
 def identity(x):
     return x
 
 def sigmoid(x):
-    return 1 
+    return 1 / (1 + np.exp(-x))
 
 def sum_of_squares(x):
     return x
 
 def cross_entropy(x):
-    return 1 
+    return 1
 
-def identity_derivative(x):
+def relu(x):
     return x
 
-def sigmoid_derivative(x):
-    return 1 
-
-def sum_of_squares_derivative(x):
+def identity_deriv(x):
     return x
 
-def cross_entropy_derivative(x):
-    return 1 
+def sigmoid_deriv(x):
+    return 1
 
-activation_functions = [sigmoid, identity]
-activation_functions_derivative = [sigmoid_derivative,identity_derivative]
-error_functions = [sigmoid, identity]
+def sum_of_squares_deriv(x):
+    return x
+
+def cross_entropy_deriv(x):
+    return 1
+
+def relu_deriv(x):
+    return 1
+
+activation_functions = [sigmoid, identity, relu]
+activation_functions_deriv= [sigmoid_deriv, identity_deriv, relu_deriv]
+
+error_functions = [cross_entropy, sum_of_squares]
+error_functions_deriv = [cross_entropy_deriv, sum_of_squares_deriv]

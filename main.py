@@ -11,6 +11,8 @@ images, labels = mndata.load_training()
 
 # utility.get_configuration_net()
 
+
+
 image = images[0]
 label = labels[0]
 image = np.array(image)

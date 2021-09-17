@@ -1,4 +1,5 @@
 import numpy as np 
+import functions as fun
 import sys 
 
 n_activation_functions = 3
@@ -20,22 +21,6 @@ def __types_of_error_functions():
     print('\n   Types of error functions:')
     print('   1] Cross Entropy')
     print('   2] Sum of Squares\n')
-    
-def __get_activation_function(num):
-
-    if num==1 :
-        return 'sigmoid'
-    if num==2 :
-        return 'identity'
-    if num==3 :
-        return 'ReLU'
-
-def __get_error_function(num):
-
-    if num==1 :
-        return 'cross_entropy'
-    if num==2 :
-        return 'sum_of_squares'
 
 def __check_int_input(value, min_value,max_value):
     if not value.isnumeric():
@@ -81,7 +66,7 @@ def get_configuration_net():
 
         activation_function = __get_int_input('-  choose activaction function: ',1, n_activation_functions)
         n_nodes_hidden_layers.append(int(n_nodes))
-        types_of_activation_functions_hidden_layers.append(__get_activation_function(activation_function))
+        types_of_activation_functions_hidden_layers.append(int(activation_function))
         
         print('\n')
     
@@ -90,4 +75,4 @@ def get_configuration_net():
    
     error_function = __get_int_input('-  define the error function: ',1, n_error_functions)
 
-    return n_hidden_layers, n_nodes_hidden_layers, types_of_activation_functions_hidden_layers, __get_error_function(error_function)
+    return n_hidden_layers, n_nodes_hidden_layers, types_of_activation_functions_hidden_layers, error_function

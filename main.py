@@ -24,8 +24,8 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 # creazione rete
-net = Net(hidden_layers_num=1,
-          nodes_num=[3],
+net = Net(n_hidden_layers=1,
+          n_hidden_nodes=[3],
           activation_functions=[sigmoid, identity],
           error_function=[identity])
 

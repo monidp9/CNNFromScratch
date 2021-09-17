@@ -56,18 +56,17 @@ net.print_config()
 '''
 
 net = Net(n_hidden_layers=1,
-          n_hidden_nodes_per_layer=[3],
+          n_hidden_nodes_per_layer=[2],
           act_fun_codes=[0, 1],
           error_fun_code=0)
 
-net.print_config()
+# net.print_config()
 
-image = images[0]
-image = np.array(image)
-image = image.reshape(-1, 1)
-
+# image = images[0]
+# image = np.array(image)
+# image = image.reshape(-1, 1)
+#
 # layer_input, layer_output = net.forwardStep(image)
-
 
 
 

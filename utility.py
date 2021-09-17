@@ -1,3 +1,4 @@
+from functions import identity
 import numpy as np 
 import sys 
 
@@ -15,6 +16,27 @@ def types_of_activation_functions():
     print('   1] sigmoid')
     print('   2] identity')
     print('   3] ReLU\n')
+
+def types_of_error_functions(): 
+    print('\n   Types of error functions:')
+    print('   1] Cross Entropy')
+    print('   2] Sum of Squares\n')
+    
+def get_activation_function(num):
+
+    if num==1 :
+        return 'sigmoid'
+    if num==2 :
+        return 'identity'
+    if num==3 :
+        return 'ReLU'
+
+def get_error_function(num):
+
+    if num==1 :
+        return 'cross_entropy'
+    if num==2 :
+        return 'sum_of_squares'
 
 def check_int_input(value, min_value,max_value):
     if not value.isnumeric():
@@ -37,14 +59,6 @@ def get_int_input(string, min_value, max_value=sys.maxsize) :
 
     return int(value)
  
-def get_activation_functions(num):
-    print('scegliere funzione')
-
-def types_of_error_functions(): 
-    
-    print('\n   Types of error functions:')
-    print('   1] Cross Entropy')
-    print('   2] Sum of Squares\n')
 
 def get_configuration_net():
     print('\n\n\n')
@@ -56,8 +70,8 @@ def get_configuration_net():
 
     print('\nfor each hidden layer define the number of internal nodes and the activation functions.')
 
-    n_nodes_hidden_layers = np.ndarray(int(n_hidden_layers), dtype=int)
-    types_of_activation_functions_hidden_layers = np.ndarray(int(n_hidden_layers), dtype=int)
+    n_nodes_hidden_layers = list()  
+    types_of_activation_functions_hidden_layers = list()  
     
     types_of_activation_functions()
 
@@ -66,9 +80,9 @@ def get_configuration_net():
     
         n_nodes=get_int_input('-  number of nodes: ',1)
 
-        function = get_int_input('-  choose activaction function: ',1, n_activation_functions)
-        n_nodes_hidden_layers[i] = n_nodes
-        types_of_activation_functions_hidden_layers[i] = function
+        activation_function = get_int_input('-  choose activaction function: ',1, n_activation_functions)
+        n_nodes_hidden_layers.append(int(n_nodes))
+        types_of_activation_functions_hidden_layers.append(get_activation_function(activation_function))
         
         print('\n')
     
@@ -77,4 +91,4 @@ def get_configuration_net():
    
     error_function = get_int_input('-  define the error function: ',1, n_error_functions)
 
-    return n_hidden_layers, n_nodes_hidden_layers, types_of_activation_functions_hidden_layers, error_function
+    return n_hidden_layers, n_nodes_hidden_layers, types_of_activation_functions_hidden_layers, get_error_function(error_function)

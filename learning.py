@@ -64,7 +64,7 @@ def back_propagation(net, x, t):
 def batch_learning(net, X_train, t_train, X_val, t_val):
     # possibili iperparametri
     eta = 0.1
-    n_epochs = 10
+    n_epochs = 30
 
     train_errors = list()
     val_errors = list()
@@ -108,6 +108,8 @@ def batch_learning(net, X_train, t_train, X_val, t_val):
 
         train_errors.append(train_error)
         val_errors.append(val_error)
+
+        print('epoch {}, train error {}, val error {}'.format(epoch, train_error, val_error))
 
         if val_error < min_error:
             min_error = val_error

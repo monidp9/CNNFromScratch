@@ -32,7 +32,7 @@ class Net:
                 self.weights.append(np.random.normal(size=(self.nodes_per_layer[i],
                                                      self.nodes_per_layer[i-1])))
 
-            self.bias.append(np.random.normal(size=(self.nodes_per_layer[i], 1)))
+            self.bias.append(np.zeros((self.nodes_per_layer[i], 1)))
 
     def forward_step(self, x):
         layer_input = list()

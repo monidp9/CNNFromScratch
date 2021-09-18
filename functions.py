@@ -47,6 +47,7 @@ def cross_entropy_softmax(y, t):
 def sum_of_squares_deriv(y, t):
     return y - t
 
+# da verificare
 def cross_entropy_deriv(y, t):
     return - y / t
 

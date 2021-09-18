@@ -55,20 +55,17 @@ net = Net(n_hidden_layers=n_hidden_layers,
 net.print_config()
 '''
 
-# net = Net(n_hidden_layers=1,
-#           n_hidden_nodes_per_layer=[2],
-#           act_fun_codes=[0, 1],xw
-#           error_fun_code=0)
+net = Net(n_hidden_layers=1,
+          n_hidden_nodes_per_layer=[2],
+          act_fun_codes=[0, 1],
+          error_fun_code=0)
 
 
 import functions as fun
 
-act_fun_code = 0
-sigmoid_deriv = fun.activation_functions_deriv[act_fun_code]
+sigmoid_deriv = fun.activation_functions_deriv[net.act_fun_code_per_layer[0]]
 
-error_fun_code = 0
-cross_entropy = fun.error_functions[error_fun_code]
-cross_entropy_softmax = fun.error_functions_softmax[error_fun_code]
+cross_entropy = fun.error_functions[net.error_fun_code]
 
 
 

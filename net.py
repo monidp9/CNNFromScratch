@@ -34,7 +34,7 @@ class Net:
 
             self.bias.append(np.random.normal(size=(self.nodes_per_layer[i], 1)))
 
-    def forwardStep(self, x):
+    def forward_step(self, x):
         layer_input = list()
         layer_output = list()
 
@@ -59,12 +59,10 @@ class Net:
         for i in range(self.n_layers):
             if i == 0:
                 # calcolo input dei nodi del primo strato nascosto
-                print('\n\nlayer {} \t ({}) x ({}) + {}'.format(i, self.weights[i].shape, x.shape, self.bias[i]))
                 input = np.dot(self.weights[i], x) + self.bias[i]
 
             else:
                 # calcolo input dei nodi di uno strato nascosto generico
-                print('layer {} \t ({}) x ({})\n\n'.format(i, self.weights[i].shape, output.shape))
                 input = np.dot(self.weights[i], output) + self.bias[i]
 
             act_fun = fun.activation_functions[self.act_fun_code_per_layer[i]]

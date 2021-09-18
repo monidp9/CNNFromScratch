@@ -1,4 +1,4 @@
-from learning import back_progagation
+from learning import back_propagation
 import utility
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,4 +26,4 @@ image=image.reshape(-1,1)
 label = np.array([1,1])
 label=label.reshape(-1,1)
 
-back_progagation(net,image,label)
+back_propagation(net,image,label)

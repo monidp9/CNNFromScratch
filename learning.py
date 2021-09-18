@@ -37,17 +37,6 @@ def __get_weights_bias_deriv(net, x, delta, layer_input, layer_output) :
 
     return weights_deriv, bias_deriv
 
-def __sum_of_deriv():
-    pass
-
-
-def back_propagation(net, x, t):
-    layer_input, layer_output = net.forwardStep(x)
-    delta = __get_delta(net, t, layer_input,layer_output)
-    weights_deriv, bias_deriv = __get_weights_bias_deriv(net, x, delta, layer_input, layer_output)
-
-    return weights_deriv, bias_deriv
-
 def standard_gradient_descent(net, weights_deriv, bias_deriv, eta):
     for i in range(net.n_layers):
         layer_weights = net.weights[i]
@@ -64,6 +53,14 @@ def standard_gradient_descent(net, weights_deriv, bias_deriv, eta):
         net.bias[i] = layer_bias
     return net
 
+def back_propagation(net, x, t):
+    # x: singola istanza
+    layer_input, layer_output = net.forward_step(x)
+    delta = __get_delta(net, t, layer_input,layer_output)
+    weights_deriv, bias_deriv = __get_weights_bias_deriv(net, x, delta, layer_input, layer_output)
+
+    return weights_deriv, bias_deriv
+
 def batch_learning(net, X_train, t_train, X_val, t_val):
     # possibili iperparametri
     eta = 0.1
@@ -79,11 +76,29 @@ def batch_learning(net, X_train, t_train, X_val, t_val):
     min_error = error_fun(y_val, t_val)
 
     for epoch in range(n_epochs):
-        weights_deriv, bias_deriv = back_propagation(net, X_train, t_train)
+        n_instances = X_train.shape[1]
+        total_weights_deriv = None
+        total_bias_deriv = None
 
-        # somma delle derivate della funzione di errore
+        # somma delle derivate
+        for n in range(n_instances):
+            # si estrapolano singole istanze come vettori colonna
+            x = X_train[:, n].reshape(-1, 1)
+            t = t_train[:, n].reshape(-1, 1)
+            weights_deriv, bias_deriv = back_propagation(net, x, t)
 
-        net = standard_gradient_descent(net, weights_deriv, bias_deriv, eta)
+            if n == 0:
+                total_weights_deriv = weights_deriv.copy()
+                total_bias_deriv = bias_deriv.copy()
+            else:
+                for i in range(len(weights_deriv)):
+                    total_weights_deriv[i] = np.add(total_weights_deriv[i], weights_deriv[i])
+
+                for i in range(len(bias_deriv)):
+                    total_bias_deriv[i] = np.add(total_bias_deriv[i], bias_deriv[i])
+
+
+        net = standard_gradient_descent(net, total_weights_deriv, total_bias_deriv, eta)
 
         y_train = net.sim(X_train)
         y_val = net.sim(X_val)

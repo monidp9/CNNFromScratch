@@ -61,11 +61,7 @@ net = Net(n_hidden_layers=1,
           error_fun_code=0)
 
 
-import functions as fun
-
-sigmoid_deriv = fun.activation_functions_deriv[net.act_fun_code_per_layer[0]]
-
-cross_entropy = fun.error_functions[net.error_fun_code]
+net.print_config()
 
 
 

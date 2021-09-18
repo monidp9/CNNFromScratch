@@ -10,13 +10,10 @@ class Net:
         self.n_layers = n_hidden_layers + 1
 
         self.error_fun = fun.error_functions[error_fun_code]
-        self.error_fun_deriv = fun.error_functions_deriv[error_fun_code]
 
         self.act_fun_per_layer = list()
-        self.act_fun_deriv_per_layer = list()
         for i in act_fun_codes:
             self.act_fun_per_layer.append(fun.activation_functions[i])
-            self.act_fun_deriv_per_layer.append(fun.activation_functions_deriv[i])
 
         self.nodes_per_layer = n_hidden_nodes_per_layer.copy()
         self.nodes_per_layer.append(self.n_output_nodes)
@@ -27,6 +24,7 @@ class Net:
         self.__initialize_weights_and_bias()
         self.activation_function_deriv = identity
         self.error_function_deriv = identity
+
 
     def __initialize_weights_and_bias(self):
         for i in range(self.n_layers):
@@ -50,12 +48,10 @@ class Net:
                 input = np.dot(self.weights[i], x) + self.bias[i]
                 layer_input.append(input)
 
-
             else:
                 # calcolo input dei nodi di uno strato nascosto generico
                 input = np.dot(self.weights[i], layer_output[i-1]) + self.bias[i]
                 layer_input.append(input)
-
 
             output = self.act_fun_per_layer[i](layer_input[i])
             layer_output.append(output)

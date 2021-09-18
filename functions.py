@@ -1,5 +1,8 @@
 import numpy as np
 
+def softmax(scores):
+    return np.exp(scores) / np.sum(np.exp(scores))
+
 # funzioni di attivazione
 def identity(x):
     return x
@@ -38,8 +41,16 @@ def sum_of_squares_deriv(pred, label):
 def cross_entropy_deriv(pred, label):
     return - pred / label
 
+def cross_entropy_softmax(pred, label):
+    softmax_pred = softmax(pred)
+    return cross_entropy(softmax_pred, label)
+
+def cross_entropy_softmax_deriv(pred, label):
+    softmax_pred = softmax(pred)
+    return softmax_pred - label
+
 activation_functions = [sigmoid, identity, relu]
 activation_functions_deriv= [sigmoid_deriv, identity_deriv, relu_deriv]
 
-error_functions = [cross_entropy, sum_of_squares]
-error_functions_deriv = [cross_entropy_deriv, sum_of_squares_deriv]
+error_functions = [cross_entropy, cross_entropy_softmax, sum_of_squares]
+error_functions_deriv = [cross_entropy_deriv, cross_entropy_softmax_deriv, sum_of_squares_deriv]

@@ -60,7 +60,7 @@ def get_configuration_net():
     types_of_activation_functions()
 
     for i in range(n_hidden_layers):
-        print('hidden layer',i+1,':')
+        print('hidden layer', i+1, ':')
 
         n_nodes = get_int_input('-  number of nodes: ',1)
         n_hidden_nodes_per_layer.append(int(n_nodes))

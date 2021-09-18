@@ -42,48 +42,42 @@ def convolution(image):
 mndata = MNIST('./python-mnist/data')
 X, t = mndata.load_training()
 
-'''
-n_hidden_layers, \
-n_hidden_nodes_per_layer, \
-act_fun_codes, \
-error_fun_code = utility.get_configuration_net()
-
-# creazione rete
-net = Net(n_hidden_layers=n_hidden_layers,
-          n_hidden_nodes_per_layer=n_hidden_nodes_per_layer,
-          act_fun_codes=act_fun_codes,
-          error_fun_code=error_fun_code)
-
-net.print_config()
-'''
 
 net = Net(n_hidden_layers=1,
           n_hidden_nodes_per_layer=[4],
           act_fun_codes=[0, 1],
           error_fun_code=1)
 
-net.print_config()
+# net.print_config()
 
 X = utility.get_mnist_data(X)
 t = utility.get_mnist_labels(t)
 
-X_train = X[:, 0:20]
-t_train = t[:, 0:20]
+# X_train = X[:, 0:20]
+# t_train = t[:, 0:20]
+#
+# X_val = X[:, 21:31]
+# t_val = t[:, 21:31]
+#
+# print('{} train {} val'.format(X_train.shape, X_val.shape))
+# print('{} train labels {} val labels'.format(t_train.shape, t_val.shape), '\n\n')
+#
+# net = batch_learning(net, X_train, t_train, X_val, t_val)
 
-X_val = X[:, 21:26]
-t_val = t[:, 21:26]
+
+X_train = X[:, 0:1]
+
+y = net.sim(X_train)
 
 
-# best_net = batch_learning(net, X_train, t_train, X_val, t_val)
 
-weights_deriv, bias_deriv = back_propagation(net, X_train, t_train)
-# net = standard_gradient_descent(net, weights_deriv, bias_deriv, 0.1)
 
-layer_weights_deriv = weights_deriv[0]
-print(layer_weights_deriv.shape)
 
-# y_train = net.sim(X_train)
-# y_val = net.sim(X_val)
+
+
+
+
+
 
 
 # --------------CONVOLUZIONE------------------

@@ -1,5 +1,7 @@
 import numpy as np
 
+np.seterr(over='ignore')
+
 def softmax(scores):
     return np.exp(scores) / np.sum(np.exp(scores))
 
@@ -12,7 +14,7 @@ def sigmoid(x):
 
 def relu(x):
     return np.maximum(x, 0)
-    
+
 
 # derivate funzioni di attivazione
 def identity_deriv(x):

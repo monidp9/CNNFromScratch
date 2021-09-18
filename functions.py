@@ -31,27 +31,27 @@ def relu_deriv(x):
 
 
 # funzioni di errore
-def sum_of_squares(pred, label):
-    return 0.5 * np.sum(np.power(pred - label, 2))
+def sum_of_squares(y, t):
+    return 0.5 * np.sum(np.power(y - t, 2))
 
-def cross_entropy(pred, label):
-    return - np.sum(label * np.log(pred))
+def cross_entropy(y, t):
+    return - np.sum(t * np.log(y))
 
-def cross_entropy_softmax(pred, label):
-    softmax_pred = softmax(pred)
-    return cross_entropy(softmax_pred, label)
+def cross_entropy_softmax(y, t):
+    softmax_y = softmax(y)
+    return cross_entropy(softmax_y, t)
 
 
 # derivate funzioni di errore
-def sum_of_squares_deriv(pred, label):
-    return pred - label
+def sum_of_squares_deriv(y, t):
+    return y - t
 
-def cross_entropy_deriv(pred, label):
-    return - pred / label
+def cross_entropy_deriv(y, t):
+    return - y / t
 
-def cross_entropy_softmax_deriv(pred, label):
-    softmax_pred = softmax(pred)
-    return softmax_pred - label
+def cross_entropy_softmax_deriv(y, t):
+    softmax_y = softmax(y)
+    return softmax_y - t
 
 
 

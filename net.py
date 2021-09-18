@@ -50,7 +50,8 @@ class Net:
                 input = np.dot(self.weights[i], layer_output[i-1]) + self.bias[i]
                 layer_input.append(input)
 
-            output = self.act_fun_per_layer[i](layer_input[i])
+            act_fun = fun.activation_functions[self.act_fun_code_per_layer[i]]
+            output = act_fun(layer_input[i])
             layer_output.append(output)
 
         return layer_input, layer_output

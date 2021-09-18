@@ -62,15 +62,17 @@ class Net:
 
         print(f"• input layer: \t\t {self.n_input_nodes} nodes")
 
+        error_fun = fun.error_functions[self.error_fun_code]
         for i in range(self.n_layers):
+            act_fun = fun.activation_functions[self.act_fun_code_per_layer[i]]
             if i != self.n_layers - 1:
                 print(f"• hidden layer {i+1}: \t{self.nodes_per_layer[i]} nodes,"
-                f"{self.act_fun_per_layer[i]} \t (activation function)")
+                f"{act_fun} \t (activation function)")
             else:
                 print(f"• output layer: \t{self.n_output_nodes} nodes,"
-                f"{self.act_fun_per_layer[i]} \t (activation function)")
+                f"{act_fun} \t (activation function)")
 
-        print(f"{self.error_fun} (error function)")
+        print(f"{error_fun} (error function)")
 
         print('-'*100)
         print('\n')

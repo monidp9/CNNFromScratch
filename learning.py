@@ -3,51 +3,45 @@ import functions as fun
 import numpy as np
 
 
-def get_delta(layer_input,layer_output,t) :
-
+def get_delta(net, t, layer_input, layer_output) :
     delta = []
 
-    for layer in range(net.n_layers):
+    for i in range(net.n_layers):
         delta.append(np.zeros(net.n_layers))
 
-    for layer in range(net.n_layers-1, -1, -1):
-        
-        act_fun_deriv = fun.activation_functions_deriv[net.act_fun_code_per_layer[layer]]
+    for i in range(net.n_layers-1, -1, -1):
+        act_fun_deriv = fun.activation_functions_deriv[net.act_fun_code_per_layer[i]]
        
-        if layer == net.n_layers-1 :
+        if i == net.n_layers-1 :
             error_fun_deriv = fun.error_functions_deriv[net.error_fun_code]
 
-            delta[layer] = act_fun_deriv(layer_input[layer]) * \
-                       error_fun_deriv(layer_output[layer],t)
+            delta[i] = act_fun_deriv(layer_input[i]) * \
+                       error_fun_deriv(layer_output[i],t)
         else :
-            delta[layer] = act_fun_deriv(layer_input[layer]) * \
-                       np.dot(np.transpose(net.weights[layer+1]),delta[layer+1])
+            delta[i] = act_fun_deriv(layer_input[i]) * \
+                       np.dot(np.transpose(net.weights[i+1]),delta[i+1])
     
     return delta
-                       
-def get_weights_bias_deriv(x, delta, layer_input, layer_output) :
-        
+                      
+def get_weights_bias_deriv(net, x, delta, layer_input, layer_output) :     
     weights_deriv = []
     bias_deriv = []
 
-    for layer in range(net.n_layers):
-        if layer == 0 :
-            weights_deriv.append(np.dot(delta[layer],np.transpose(x)))
+    for i in range(net.n_layers):
+        if i == 0 :
+            weights_deriv.append(np.dot(delta[i],np.transpose(x)))
         else :
-            weights_deriv.append(np.dot(delta[layer],np.transpose(layer_output[layer-1])))
+            weights_deriv.append(np.dot(delta[i],np.transpose(layer_output[i-1])))
 
-        bias_deriv.append(delta[layer]) # right ? 
+        bias_deriv.append(delta[i])
 
     return weights_deriv, bias_deriv
 
 
-
 def back_progagation(net, x, t):  
-
     layer_input, layer_output = net.forwardStep(x)
-
-    delta = get_delta(layer_input,layer_output, t)
-    weights_deriv, bias_deriv = get_weights_bias_deriv(x, delta, layer_input, layer_output)
+    delta = get_delta(net, t, layer_input,layer_output)
+    weights_deriv, bias_deriv = get_weights_bias_deriv(net, x, delta, layer_input, layer_output)
 
 
 

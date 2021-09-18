@@ -80,3 +80,19 @@ def get_configuration_net():
     os.system('clear')
 
     return n_hidden_layers, n_hidden_nodes_per_layer, act_fun_codes, error_fun_code
+
+
+def get_mnist_data(data):
+    data = np.array(data)
+    data = np.transpose(data)
+    return data
+
+def get_mnist_labels(labels):
+    labels = np.array(labels)
+    one_hot_labels = np.zeros((10, labels.shape[0]))
+
+    for n in range(labels.shape[0]):
+        label = labels[n] - 1
+        one_hot_labels[label][n] = 1
+
+    return one_hot_labels

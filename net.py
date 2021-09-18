@@ -5,8 +5,8 @@ import functions as fun
 
 class Net:
     def __init__(self, n_hidden_layers, n_hidden_nodes_per_layer, act_fun_codes, error_fun_code):
-        self.n_input_nodes = 2 # dipende dal dataset: 784
-        self.n_output_nodes = 2 # dipende dal dataset: 10
+        self.n_input_nodes = 784 # dipende dal dataset: 784
+        self.n_output_nodes = 10 # dipende dal dataset: 10
         self.n_layers = n_hidden_layers + 1
 
         self.error_fun_code = error_fun_code
@@ -34,7 +34,6 @@ class Net:
 
             self.bias.append(np.random.normal(size=(self.nodes_per_layer[i], 1)))
 
-
     def forwardStep(self, x):
         layer_input = list()
         layer_output = list()
@@ -50,34 +49,51 @@ class Net:
                 input = np.dot(self.weights[i], layer_output[i-1]) + self.bias[i]
                 layer_input.append(input)
 
-<<<<<<< HEAD
             act_fun = fun.activation_functions[self.act_fun_code_per_layer[i]]
-=======
-            act_fun = fun.activation_functions[self.act_fun_code_per_layer[i]] 
->>>>>>> 2db5d832d091d91b006f2f3d8e19263979765ed6
             output = act_fun(layer_input[i])
             layer_output.append(output)
 
         return layer_input, layer_output
 
+    def sim(self, x):
+        for i in range(self.n_layers):
+            if i == 0:
+                # calcolo input dei nodi del primo strato nascosto
+                print('\n\nlayer {} \t ({}) x ({}) + {}'.format(i, self.weights[i].shape, x.shape, self.bias[i]))
+                input = np.dot(self.weights[i], x) + self.bias[i]
+
+            else:
+                # calcolo input dei nodi di uno strato nascosto generico
+                print('layer {} \t ({}) x ({})\n\n'.format(i, self.weights[i].shape, output.shape))
+                input = np.dot(self.weights[i], output) + self.bias[i]
+
+            act_fun = fun.activation_functions[self.act_fun_code_per_layer[i]]
+            output = act_fun(input)
+
+        return output
 
     def print_config(self):
         print('\nYOUR NETWORK')
         print('-'*100)
 
-        print(f"• input layer: \t\t {self.n_input_nodes} nodes")
+        print("• input layer: {:>11} nodes".format(self.n_input_nodes))
 
         error_fun = fun.error_functions[self.error_fun_code]
+        error_fun = error_fun.__name__
+
         for i in range(self.n_layers):
             act_fun = fun.activation_functions[self.act_fun_code_per_layer[i]]
-            if i != self.n_layers - 1:
-                print(f"• hidden layer {i+1}: \t{self.nodes_per_layer[i]} nodes,"
-                f"{act_fun} \t (activation function)")
-            else:
-                print(f"• output layer: \t{self.n_output_nodes} nodes,"
-                f"{act_fun} \t (activation function)")
+            act_fun = act_fun.__name__
 
-        print(f"{error_fun} (error function)")
+            if i != self.n_layers - 1:
+                print("• hidden layer {}: {:>8} nodes, ".format(i+1, self.nodes_per_layer[i]),
+                "{:^10} \t (activation function)".format(act_fun))
+
+            else:
+                print("• output layer: {:>10} nodes, ".format(self.n_output_nodes),
+                "{:^10} \t (activation function)".format(act_fun))
+
+        print("\n {} (error function)".format(error_fun))
 
         print('-'*100)
         print('\n')

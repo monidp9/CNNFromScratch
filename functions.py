@@ -12,13 +12,7 @@ def sigmoid(x):
 
 def relu(x):
     return np.maximum(x, 0)
-
-# funzioni di errore
-def sum_of_squares(pred, label):
-    return 0.5 * np.sum(np.power(pred - label, 2))
-
-def cross_entropy(pred, label):
-    return - np.sum(label * np.log(pred))
+    
 
 # derivate funzioni di attivazione
 def identity_deriv(x):

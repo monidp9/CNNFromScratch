@@ -23,6 +23,7 @@ label = labels[0]
 
 image = np.array([0.2, 0.5])
 image=image.reshape(-1,1)
-label = [1,1]
+label = np.array([1,1])
+label=label.reshape(-1,1)
 
 back_progagation(net,image,label)

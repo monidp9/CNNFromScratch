@@ -7,7 +7,7 @@ def __get_delta(net, t, layer_input, layer_output) :
     delta = []
 
     for i in range(net.n_layers):
-        delta.append(np.zeros(net.n_layers))
+        delta.append(np.zeros(net.nodes_per_layer))
 
     for i in range(net.n_layers-1, -1, -1):
         act_fun_deriv = fun.activation_functions_deriv[net.act_fun_code_per_layer[i]]
@@ -40,9 +40,9 @@ def __get_weights_bias_deriv(net, x, delta, layer_input, layer_output) :
 def __sum_of_deriv():
     pass
 
-
 def back_propagation(net, x, t):
     layer_input, layer_output = net.forwardStep(x)
+    
     delta = __get_delta(net, t, layer_input,layer_output)
     weights_deriv, bias_deriv = __get_weights_bias_deriv(net, x, delta, layer_input, layer_output)
 

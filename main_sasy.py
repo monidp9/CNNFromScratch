@@ -1,3 +1,4 @@
+from os import get_terminal_size
 from learning import back_propagation
 import utility
 import numpy as np
@@ -9,21 +10,26 @@ from mnist import MNIST
 
 # caricamento dataset
 mndata = MNIST('./python-mnist/data')
-images, labels = mndata.load_training()
+X, t = mndata.load_training()
 
 net = Net(n_hidden_layers=1,
-          n_hidden_nodes_per_layer=[3],
+          n_hidden_nodes_per_layer=[4],
           act_fun_codes=[0,1],
-          error_fun_code=0)
+          error_fun_code=1)
 
 net.print_config()
 
-image = images[0]
-label = labels[0]
+X = utility.get_mnist_data(X)
+t = utility.get_mnist_labels(t)
 
-image = np.array([0.2, 0.5])
-image=image.reshape(-1,1)
-label = np.array([1,1])
-label=label.reshape(-1,1)
+X,t = utility.get_random_dataset(X,t,20)
 
-back_propagation(net,image,label)
+X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.25)
+
+istance = X_train[:,0].reshape(-1,1)
+label =  t_train[:,0].reshape(-1,1)
+
+w,b = back_propagation(net,istance,label)
+
+print(b[0])
+print(b[1])

@@ -81,7 +81,6 @@ def get_configuration_net():
 
     return n_hidden_layers, n_hidden_nodes_per_layer, act_fun_codes, error_fun_code
 
-
 def get_mnist_data(data):
     data = np.array(data)
     data = np.transpose(data)
@@ -96,3 +95,47 @@ def get_mnist_labels(labels):
         one_hot_labels[label][n] = 1
 
     return one_hot_labels
+
+def get_random_dataset(X,t, dim_new_dataset=10000):
+    if X.shape[1] < dim_new_dataset : 
+        raise ValueError
+
+    n_tot_samples = X.shape[1]
+    samples_not_considered = n_tot_samples - dim_new_dataset
+
+    dataset = np.array([1] * dim_new_dataset + [0] * samples_not_considered )
+    np.random.shuffle(dataset) 
+
+    index = np.where(dataset == 1)
+    index = np.reshape(index,-1)
+
+    new_X = X[:,index]
+    new_t = t[:,index]   
+
+    return new_X, new_t
+
+def train_test_split(X, t, test_size=0.25):
+
+    n_samples = X.shape[1]
+    test_size = int(n_samples * test_size)
+    train_size = n_samples - test_size
+    
+    train = [1] * train_size
+    test = [0] * test_size
+    
+    dataset = np.array(train + test)
+    np.random.shuffle(dataset)
+
+    train_index = np.where(dataset == 1)
+    train_index = np.reshape(train_index,-1)
+
+    X_train = X[:,train_index]
+    t_train = t[:,train_index]
+    
+    test_index = np.where(dataset == 0)
+    test_index = np.reshape(test_index,-1)
+
+    X_test = X[:,test_index]
+    t_test = t[:,test_index]
+    
+    return X_train, X_test, t_train, t_test

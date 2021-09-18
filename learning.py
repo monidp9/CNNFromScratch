@@ -7,7 +7,7 @@ def __get_delta(net, t, layer_input, layer_output) :
     delta = []
 
     for i in range(net.n_layers):
-        delta.append(np.zeros(net.n_layers))
+        delta.append(np.zeros(net.nodes_per_layer))
 
     for i in range(net.n_layers-1, -1, -1):
         act_fun_deriv = fun.activation_functions_deriv[net.act_fun_code_per_layer[i]]

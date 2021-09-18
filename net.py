@@ -9,11 +9,8 @@ class Net:
         self.n_output_nodes = 2 # dipende dal dataset: 10
         self.n_layers = n_hidden_layers + 1
 
-        self.error_fun = fun.error_functions[error_fun_code]
-
-        self.act_fun_per_layer = list()
-        for i in act_fun_codes:
-            self.act_fun_per_layer.append(fun.activation_functions[i])
+        self.error_fun_code = error_fun_code
+        self.act_fun_code_per_layer = act_fun_codes.copy()
 
         self.nodes_per_layer = n_hidden_nodes_per_layer.copy()
         self.nodes_per_layer.append(self.n_output_nodes)

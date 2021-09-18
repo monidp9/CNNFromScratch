@@ -11,11 +11,16 @@ def get_delta(layer_input,layer_output,t) :
         delta.append(np.zeros(net.n_layers))
 
     for layer in range(net.n_layers-1, -1, -1):
+        
+        act_fun_deriv = fun.activation_functions_deriv[net.act_fun_code_per_layer[layer]]
+       
         if layer == net.n_layers-1 :
-            delta[layer] = net.act_fun_deriv_per_layer[layer](layer_input[layer]) * \
-                       net.error_fun_deriv(layer_output[layer],t)
+            error_fun_deriv = fun.error_functions_deriv[net.error_fun_code]
+
+            delta[layer] = act_fun_deriv(layer_input[layer]) * \
+                       error_fun_deriv(layer_output[layer],t)
         else :
-            delta[layer] = net.act_fun_deriv_per_layer[layer](layer_input[layer]) * \
+            delta[layer] = act_fun_deriv(layer_input[layer]) * \
                        np.dot(np.transpose(net.weights[layer+1]),delta[layer+1])
     
     return delta

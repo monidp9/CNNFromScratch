@@ -96,17 +96,17 @@ def get_mnist_labels(labels):
 
     return one_hot_labels
 
-def get_random_dataset(X,t, dim_new_dataset=10000):
-    if X.shape[1] < dim_new_dataset : 
+def get_random_dataset(X,t, n_samples_considered =10000):
+    if X.shape[1] < n_samples_considered : 
         raise ValueError
 
     n_tot_samples = X.shape[1]
-    samples_not_considered = n_tot_samples - dim_new_dataset
+    n_samples_not_considered = n_tot_samples - n_samples_considered
 
-    dataset = np.array([1] * dim_new_dataset + [0] * samples_not_considered )
-    np.random.shuffle(dataset) 
+    new_dataset = np.array([1] * n_samples_considered + [0] * n_samples_not_considered )
+    np.random.shuffle(new_dataset) 
 
-    index = np.where(dataset == 1)
+    index = np.where(new_dataset == 1)
     index = np.reshape(index,-1)
 
     new_X = X[:,index]
@@ -120,10 +120,7 @@ def train_test_split(X, t, test_size=0.25):
     test_size = int(n_samples * test_size)
     train_size = n_samples - test_size
     
-    train = [1] * train_size
-    test = [0] * test_size
-    
-    dataset = np.array(train + test)
+    dataset = np.array([1] * train_size + [0] * test_size) 
     np.random.shuffle(dataset)
 
     train_index = np.where(dataset == 1)

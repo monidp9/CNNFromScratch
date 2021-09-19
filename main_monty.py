@@ -44,33 +44,32 @@ X, t = mndata.load_training()
 
 
 net = Net(n_hidden_layers=1,
-          n_hidden_nodes_per_layer=[2],
+          n_hidden_nodes_per_layer=[15],
           act_fun_codes=[0, 1],
           error_fun_code=1)
 
-# net.print_config()
+net.print_config()
 
-X = utility.get_mnist_data(X)
-t = utility.get_mnist_labels(t)
-
-# X_train = X[:, 0:100]
-# t_train = t[:, 0:100]
+# X = utility.get_mnist_data(X)
+# t = utility.get_mnist_labels(t)
 #
-# X_val = X[:, 101:150]
-# t_val = t[:, 101:150]
-
-# net = batch_learning(net, X_train, t_train, X_val, t_val)
-
-
-X_train = X[:, 0:1]
-
-y = net.sim(X_train)
+# X, t = utility.get_random_dataset(X, t, 2000)
+#
+# X_train, X_val, t_train, t_val = utility.train_test_split(X, t)
 
 
+from sklearn.datasets import load_iris
 
 
+dataset = load_iris()
+X_train = np.transpose(dataset.data)
+t_train = dataset.target
 
+t_train = utility.get_iris_labels(t_train)
 
+X_train, X_val, t_train, t_val = utility.train_test_split(X_train, t_train)
+
+net = batch_learning(net, X_train, t_train, X_val, t_val)
 
 
 

@@ -15,11 +15,9 @@ def __get_delta(net, t, layer_input, layer_output) :
         if i == net.n_layers-1 :
             error_fun_deriv = fun.error_functions_deriv[net.error_fun_code]
 
-            delta[i] = act_fun_deriv(layer_input[i]) * \
-                       error_fun_deriv(layer_output[i], t)
+            delta[i] = act_fun_deriv(layer_input[i]) *  error_fun_deriv(layer_output[i], t)
         else :
-            delta[i] = act_fun_deriv(layer_input[i]) * \
-                       np.dot(np.transpose(net.weights[i+1]), delta[i+1])
+            delta[i] = act_fun_deriv(layer_input[i]) *  np.dot(np.transpose(net.weights[i+1]), delta[i+1])
 
     return delta
 
@@ -64,7 +62,7 @@ def back_propagation(net, x, t):
 def batch_learning(net, X_train, t_train, X_val, t_val):
     # possibili iperparametri
     eta = 0.1
-    n_epochs = 30
+    n_epochs = 150
 
     train_errors = list()
     val_errors = list()

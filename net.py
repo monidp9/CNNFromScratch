@@ -1,6 +1,7 @@
 import numpy as np
 import functions as fun
 
+# utilizzare una tupla per input nodi-strati
 
 class Net:
     def __init__(self, n_hidden_layers, n_hidden_nodes_per_layer, act_fun_codes, error_fun_code):

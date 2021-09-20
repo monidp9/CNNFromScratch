@@ -52,8 +52,14 @@ def back_propagation(net, x, t):
     return weights_deriv, bias_deriv
 
 def batch_learning(net, X_train, t_train, X_val, t_val):
+<<<<<<< HEAD
     eta = 0.001
     n_epochs = 300
+=======
+    # possibili iperparametri
+    eta = 0.1
+    n_epochs = 50
+>>>>>>> 10a11babd6df6adea858eb41eae0af1cd018968a
 
     train_errors = list()
     val_errors = list()

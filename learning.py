@@ -107,10 +107,11 @@ def batch_learning(net, X_train, t_train, X_val, t_val):
         train_errors.append(train_error)
         val_errors.append(val_error)
 
-        print('epoch {}, train error {}, val error {}'.format(epoch, train_error, val_error))
+        # print('epoch {}, train error {}, val error {}'.format(epoch, train_error, val_error))
 
         if val_error < min_error:
             min_error = val_error
             best_net = net
 
+    print('best min error: ', min_error)
     return best_net

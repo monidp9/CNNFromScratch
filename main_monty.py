@@ -1,13 +1,66 @@
 import utility
 import numpy as np
 import matplotlib.pyplot as plt
-
+import functions as fun
 
 from net import Net
 from mnist import MNIST
 from learning import batch_learning, standard_gradient_descent, back_propagation
 
 
+net = Net(n_hidden_layers=1,
+          n_hidden_nodes_per_layer=[2],
+          act_fun_codes=[0, 0],
+          error_fun_code=0)
+
+net.print_config()
+
+# DATASET MNIST
+
+# mndata = MNIST('./python-mnist/data')
+# X, t = mndata.load_training()
+
+# X = utility.get_mnist_data(X)
+# t = utility.get_mnist_labels(t)
+#
+# X, t = utility.get_random_dataset(X, t, 2000)
+#
+# X_train, X_val, t_train, t_val = utility.train_test_split(X, t)
+# net = batch_learning(net, X_train, t_train, X_val, t_val)
+
+
+
+# DATASET IRIS
+from sklearn.datasets import load_iris
+dataset = load_iris()
+X_train = np.transpose(dataset.data)
+t_train = dataset.target
+
+t_train = utility.get_iris_labels(t_train)
+
+X_train, X_val, t_train, t_val = utility.train_test_split(X_train, t_train, test_size=0.20)
+X_train, X_test, t_train, t_test = utility.train_test_split(X_train, t_train, test_size=0.05)
+
+net = batch_learning(net, X_train, t_train, X_val, t_val)
+
+x = X_test[:, 0:1]
+t = t_test[:, 0:1]
+y = net.sim(x)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# --------------CONVOLUZIONE------------------
 def convolution(image):
     kernel = [[-1, -1, -1], [-1, 2, -1], [-1, -1, -1]]
     kernel = np.array(kernel)
@@ -37,47 +90,6 @@ def convolution(image):
 
     return np.array(new_image)
 
-
-# caricamento dataset
-mndata = MNIST('./python-mnist/data')
-X, t = mndata.load_training()
-
-
-net = Net(n_hidden_layers=1,
-          n_hidden_nodes_per_layer=[15],
-          act_fun_codes=[0, 1],
-          error_fun_code=1)
-
-net.print_config()
-
-# X = utility.get_mnist_data(X)
-# t = utility.get_mnist_labels(t)
-#
-# X, t = utility.get_random_dataset(X, t, 2000)
-#
-# X_train, X_val, t_train, t_val = utility.train_test_split(X, t)
-
-
-from sklearn.datasets import load_iris
-
-
-dataset = load_iris()
-X_train = np.transpose(dataset.data)
-t_train = dataset.target
-
-t_train = utility.get_iris_labels(t_train)
-
-X_train, X_val, t_train, t_val = utility.train_test_split(X_train, t_train)
-
-net = batch_learning(net, X_train, t_train, X_val, t_val)
-
-
-
-
-
-
-
-# --------------CONVOLUZIONE------------------
 '''
 x = image.reshape(28, 28)
 conv_x = convolution(x)

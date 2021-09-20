@@ -62,7 +62,7 @@ def back_propagation(net, x, t):
 def batch_learning(net, X_train, t_train, X_val, t_val):
     # possibili iperparametri
     eta = 0.1
-    n_epochs = 150
+    n_epochs = 50
 
     train_errors = list()
     val_errors = list()
@@ -94,7 +94,6 @@ def batch_learning(net, X_train, t_train, X_val, t_val):
 
                 for i in range(len(bias_deriv)):
                     total_bias_deriv[i] = np.add(total_bias_deriv[i], bias_deriv[i])
-
 
         net = standard_gradient_descent(net, total_weights_deriv, total_bias_deriv, eta)
 

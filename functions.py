@@ -2,8 +2,8 @@ import numpy as np
 
 np.seterr(over='ignore')
 
-def softmax(scores):
-    return np.exp(scores) / np.sum(np.exp(scores))
+def softmax(y):
+    return np.exp(y) / np.sum(np.exp(y))
 
 # funzioni di attivazione
 def identity(x):

@@ -1,9 +1,10 @@
 import numpy as np
+from scipy.special import softmax
 
 np.seterr(over='ignore')
 
 
-def softmax(y):
+def softmax2(y):
     exps = np.exp(y)
     return exps / np.sum(exps)
 
@@ -12,7 +13,7 @@ def identity(x):
     return x
 
 def sigmoid(x):
-    return 1.0 / (1.0 + np.exp(-x))
+    return 1 / (1 + np.exp(-x))
 
 def relu(x):
     return np.maximum(x, 0)
@@ -20,7 +21,7 @@ def relu(x):
 
 # derivate funzioni di attivazione
 def identity_deriv(x):
-    return 1
+    return np.ones(x.shape)
 
 def sigmoid_deriv(x):
     z = sigmoid(x)
@@ -41,7 +42,7 @@ def cross_entropy(y, t):
     return - np.sum(t * np.log(y))
 
 def cross_entropy_softmax(y, t):
-    softmax_y = softmax(y)
+    softmax_y = softmax(y, axis=0)
     return cross_entropy(softmax_y, t)
 
 
@@ -54,7 +55,7 @@ def cross_entropy_deriv(y, t):
     return - t / y
 
 def cross_entropy_softmax_deriv(y, t):
-    softmax_y = softmax(y)
+    softmax_y = softmax(y, axis=0)
     return softmax_y - t
 
 

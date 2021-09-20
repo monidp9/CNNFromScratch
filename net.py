@@ -1,4 +1,3 @@
-from functions import identity
 import numpy as np
 import functions as fun
 
@@ -19,8 +18,6 @@ class Net:
         self.bias = list()
 
         self.__initialize_weights_and_bias()
-        self.activation_function_deriv = identity
-        self.error_function_deriv = identity
 
 
     def __initialize_weights_and_bias(self):

@@ -10,8 +10,8 @@ from learning import batch_learning, standard_gradient_descent, back_propagation
 
 net = Net(n_hidden_layers=1,
           n_hidden_nodes_per_layer=[2],
-          act_fun_codes=[0, 0],
-          error_fun_code=0)
+          act_fun_codes=[0, 1],
+          error_fun_code=1)
 
 net.print_config()
 
@@ -39,17 +39,16 @@ t_train = dataset.target
 t_train = utility.get_iris_labels(t_train)
 
 X_train, X_val, t_train, t_val = utility.train_test_split(X_train, t_train, test_size=0.20)
-X_train, X_test, t_train, t_test = utility.train_test_split(X_train, t_train, test_size=0.05)
+X_train, X_test, t_train, t_test = utility.train_test_split(X_train, t_train, test_size=0.01)
 
+
+print(X_train.shape, X_val.shape)
 net = batch_learning(net, X_train, t_train, X_val, t_val)
 
-x = X_test[:, 0:1]
-t = t_test[:, 0:1]
-y = net.sim(x)
+y_test = net.sim(X_test)
 
-
-
-
+print(y_test)
+print(t_test)
 
 
 

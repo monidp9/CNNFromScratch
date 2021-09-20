@@ -7,16 +7,18 @@ def __get_delta(net, t, layer_input, layer_output) :
     delta = []
 
     for i in range(net.n_layers):
-        delta.append(np.zeros(net.nodes_per_layer))
+        delta.append(np.zeros(net.nodes_per_layer[i]))
 
     for i in range(net.n_layers-1, -1, -1):
         act_fun_deriv = fun.activation_functions_deriv[net.act_fun_code_per_layer[i]]
 
         if i == net.n_layers-1 :
+            # calcolo delta nodi di output
             error_fun_deriv = fun.error_functions_deriv[net.error_fun_code]
-
             delta[i] = act_fun_deriv(layer_input[i]) *  error_fun_deriv(layer_output[i], t)
+
         else :
+            # calcolo delta nodi interni
             delta[i] = act_fun_deriv(layer_input[i]) *  np.dot(np.transpose(net.weights[i+1]), delta[i+1])
 
     return delta
@@ -30,7 +32,6 @@ def __get_weights_bias_deriv(net, x, delta, layer_input, layer_output) :
             weights_deriv.append(np.dot(delta[i], np.transpose(x)))
         else :
             weights_deriv.append(np.dot(delta[i], np.transpose(layer_output[i-1])))
-
         bias_deriv.append(delta[i])
 
     return weights_deriv, bias_deriv
@@ -54,7 +55,7 @@ def standard_gradient_descent(net, weights_deriv, bias_deriv, eta):
 def back_propagation(net, x, t):
     # x: singola istanza
     layer_input, layer_output = net.forward_step(x)
-    delta = __get_delta(net, t, layer_input,layer_output)
+    delta = __get_delta(net, t, layer_input, layer_output)
     weights_deriv, bias_deriv = __get_weights_bias_deriv(net, x, delta, layer_input, layer_output)
 
     return weights_deriv, bias_deriv

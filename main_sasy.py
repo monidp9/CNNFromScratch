@@ -19,10 +19,11 @@ X = utility.get_mnist_data(X)
 t = utility.get_mnist_labels(t)
 
 
-net = ConvolutionalNet(n_conv_layers = 3, n_kernels_per_layers = [3,3,3], 
+net = ConvolutionalNet(n_conv_layers = 3, n_kernels_per_layers = [2,3,4], 
                        n_nodes_hidden_layer = 3, act_fun_codes = [0,0], error_fun_code = [0])
   
 net.print_config()
+
 
 X,t = utility.get_random_dataset(X,t,20)
 X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.25)

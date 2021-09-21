@@ -31,18 +31,20 @@ class ConvolutionalNet:
         self.__initialize_weights_and_full_conn_bias()
         self.__initialize_kernels_and_conv_bias()
 
-    def __initialize_kernels_and_conv_bias(self):
+
+    def __initialize_kernels_and_conv_bias(self): 
         for i in range(self.n_conv_layers):
             self.kernels.append(np.random.uniform(size=(self.KERNEL_SIZE, self.KERNEL_SIZE,
                                                         self.n_kernels_per_layers[i])))
-            # self.full_conn_bias = da fare
+
+            n_nodes_per_conv_layer = self.__get_n_nodes_feature_map(i)
+            self.conv_bias.append(np.random.uniform(size=(n_nodes_per_conv_layer, 1))) 
 
     def __initialize_weights_and_full_conn_bias(self):
         for i in range(self.n_full_conn_layers):
             if i == 0:
-                input = self.__get_feature_map_size(self.n_conv_layers-1, self.KERNEL_SIZE,
-                                                    self.PADDING, self.STRIDE)
-
+                input = self.__get_n_nodes_feature_map(self.n_conv_layers)
+                
                 self.weights.append(np.random.uniform(size=(self.nodes_per_layer[i],
                                                       input)))
             else:
@@ -51,9 +53,20 @@ class ConvolutionalNet:
 
             self.full_conn_bias.append(np.random.uniform(size=(self.nodes_per_layer[i], 1)))
 
-    def __get_feature_map_size(n_conv_layer,F,P,S):
-        w = 0                                 # w : dimensione input
-        return ((w - F + 2*P) / S) + 1
+    def __get_n_nodes_feature_map(self, n_conv_layer): 
+        W = round(np.sqrt(self.n_input_nodes))           
+        F = self.KERNEL_SIZE                          
+        P = self.PADDING                                  
+        S = self.STRIDE              
+
+        for i in range(n_conv_layer) :
+            output_conv_op = round((W - F + 2*P) / S) + 1                      # output operazione convoluzione
+            output_max_pooling_op = round((output_conv_op - F) / F) + 1        # output operazione max pooling 
+            W = output_max_pooling_op
+
+        n_node = np.power(W,2) * self.n_kernels_per_layers[n_conv_layer-1]
+        return n_node
+
 
     def convolution(self, x, kernel, stride=1):
         kernel = np.array(kernel)

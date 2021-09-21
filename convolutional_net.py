@@ -75,11 +75,11 @@ class ConvolutionalNet:
         n_rows = x.shape[0]
         n_columns = x.shape[1]
 
-        for x in range(1, n_rows - 1, stride):
-            for y in range(1, n_columns - 1, stride):
-                row_start = x - 1
+        for i in range(1, n_rows - 1, stride):
+            for j in range(1, n_columns - 1, stride):
+                row_start = i - 1
                 row_finish = row_start + (kernel.shape[0])
-                column_start = y - 1
+                column_start = j - 1
                 column_finish = column_start + (kernel.shape[1])
 
                 region = x[row_start:row_finish, column_start:column_finish]
@@ -94,10 +94,36 @@ class ConvolutionalNet:
 
         return np.array(conv_x)
 
-    def forward_step(self):
-        pass
+    # funzione di attivazione
+    def max_pooling(self, x, region_size):
+        n_rows = x.shape[0]
+        n_columns = x.shape[1]
 
-    def max_pooling(self):
+        row_stride = region_size[0]
+        column_stride = region_size[1]
+
+        pooled_x = list()
+        temp_result = list()
+
+        for i in range(1, n_rows - 1, row_stride):
+            for j in range(1, n_columns - 1, column_stride):
+                row_start = i - 1
+                column_start = j - 1
+
+                row_finish = row_start + row_stride
+                column_finish = column_start + column_stride
+
+                region = x[row_start:row_finish, column_start:column_finish]
+                max = np.max(region)
+
+                temp_result.append(max)
+
+            pooled_x.append(temp_result.copy())
+            temp_result[:] = []
+
+        return np.array(pooled_x)
+
+    def forward_step(self):
         pass
 
     def print_config(self):

@@ -17,7 +17,7 @@ class ConvolutionalNet:
         self.PADDING = 1                # P: padding
         self.n_full_conn_layers = 2     # impostazione rete shallow full connected
 
-        self.act_fun_codes = act_fun_codes.copy()
+        self.act_fun_codes_per_layer = act_fun_codes.copy()
         self.nodes_per_layer = list()
         self.nodes_per_layer.append(n_hidden_nodes)
         self.nodes_per_layer.append(self.n_output_nodes)
@@ -84,22 +84,19 @@ class ConvolutionalNet:
         return W
 
     def __padding(self, feature_volume):
-        if feature_volume.ndim > 2:
-            depth = feature_volume.shape[0]
-            rows = feature_volume.shape[1]
-            columns = feature_volume.shape[2]
-        else:
-            depth = 1
-            rows = feature_volume.shape[0]
-            columns = feature_volume.shape[1]
+        remove_dim = False
+        if feature_volume.ndim < 3:
+            feature_volume = np.expand_dims(feature_volume, axis=0)
+            remove_dim = True
+
+        depth = feature_volume.shape[0]
+        rows = feature_volume.shape[1]
+        columns = feature_volume.shape[2]
 
         feature_map = None
         padded_feature_volume = list()
         for d in range(depth):
-            if feature_volume.ndim > 2:
-                feature_map = feature_volume[d, :, :]
-            else:
-                feature_map = feature_volume[:, :]
+            feature_map = feature_volume[d, :, :]
 
             n_columns = feature_map.shape[1]
             vzeros = np.zeros(n_columns)
@@ -113,18 +110,20 @@ class ConvolutionalNet:
             feature_map = np.hstack((feature_map, hzeros))
             feature_map = np.hstack((hzeros, feature_map))
 
-            if feature_volume.ndim > 2:
-                padded_feature_volume.append(feature_map)
+            padded_feature_volume.append(feature_map)
 
-        if feature_volume.ndim > 2:
-            return np.array(padded_feature_volume)
-        return feature_map
+        padded_feature_volume = np.array(padded_feature_volume)
+        if remove_dim:
+            padded_feature_volume = np.squeeze(padded_feature_volume, axis=0)
 
+        return padded_feature_volume
+
+    # aggiungere il bias
     def __convolution(self, feature_volume, kernels):
         feature_volume = self.__padding(feature_volume)
 
-        if feature_volume.ndim != 3 :
-            feature_volume = np.expand_dims(feature_volume,axis=0)
+        if feature_volume.ndim < 3:
+            feature_volume = np.expand_dims(feature_volume, axis=0)
 
         depth = feature_volume.shape[0]
         n_rows = feature_volume.shape[1]
@@ -154,14 +153,14 @@ class ConvolutionalNet:
 
                     for d in range(depth):
                         region = feature_volume[d, row_start:row_finish, column_start:column_finish]
-                        matrix_prod = np.multiply(region, kernel)
+                        matrix_prod = np.multiply(region, kernel) # + bias
                         if d == 0:
                             matrix_sum = matrix_prod
                         else:
                             matrix_sum = matrix_sum + matrix_prod
 
                     result = np.sum(matrix_sum)
-                    row_temp.append(result)
+                    row_temp.append(result.copy())
 
                 feature_map_temp.append(row_temp.copy())
                 row_temp[:] = []
@@ -169,36 +168,43 @@ class ConvolutionalNet:
             conv_feature_volume.append(feature_map_temp.copy())
             feature_map_temp[:] = []
 
-        return np.array(conv_feature_volume)
+        conv_feature_volume = np.array(conv_feature_volume)
+        return conv_feature_volume
 
     # funzione di attivazione
-    def __max_pooling(self, x, region_size):
-        n_rows = x.shape[0]
-        n_columns = x.shape[1]
+    def __max_pooling(self, feature_volume, region_size):
+        depth = feature_volume.shape[0]
+        n_rows = feature_volume.shape[1]
+        n_columns = feature_volume.shape[2]
 
         row_stride = region_size[0]
         column_stride = region_size[1]
 
-        pooled_x = list()
-        temp_result = list()
+        pooled_feature_volume = list()
+        feature_temp = list()
+        row_temp = list()
 
-        for i in range(1, n_rows - 1, row_stride):
-            for j in range(1, n_columns - 1, column_stride):
-                row_start = i - 1
-                column_start = j - 1
+        for d in range(depth):
+            for i in range(1, n_rows - 1, row_stride):
+                for j in range(1, n_columns - 1, column_stride):
+                    row_start = i - 1
+                    column_start = j - 1
 
-                row_finish = row_start + row_stride
-                column_finish = column_start + column_stride
+                    row_finish = row_start + row_stride
+                    column_finish = column_start + column_stride
 
-                region = x[row_start:row_finish, column_start:column_finish]
-                max = np.max(region)
+                    region = feature_volume[d, row_start:row_finish, column_start:column_finish]
+                    max = np.max(region)
 
-                temp_result.append(max)
+                    row_temp.append(max)
 
-            pooled_x.append(temp_result.copy())
-            temp_result[:] = []
+                feature_temp.append(row_temp.copy())
+                row_temp[:] = []
 
-        return np.array(pooled_x)
+            pooled_feature_volume.append(feature_temp.copy())
+            feature_temp[:] = []
+
+        return np.array(pooled_feature_volume)
 
     def __convolutional_forward_step(self, x):
         feature_volumes = list()
@@ -214,8 +220,7 @@ class ConvolutionalNet:
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
             output = act_fun(conv_x)
 
-            print(conv_x.shape)
-            pooled_x = self.__max_pooling(conv_x,self.KERNEL_SIZE) 
+            pooled_x = self.__max_pooling(conv_x, (self.KERNEL_SIZE,self.KERNEL_SIZE))  # passare unico valore
 
             feature_volumes.append(pooled_x)
 
@@ -229,31 +234,29 @@ class ConvolutionalNet:
         for i in range(self.n_full_conn_layers):
             if i == 0:
                 # calcolo input dei nodi del primo strato nascosto
-                input = np.dot(self.weights[i], x) + self.bias[i]
+                input = np.dot(self.weights[i], x) + self.full_conn_bias[i]
             else:
                 # calcolo input dei nodi di uno strato nascosto generico
-                input = np.dot(self.weights[i], layer_output[i-1]) + self.bias[i]
+                input = np.dot(self.weights[i], layer_output[i-1]) + self.full_conn_bias[i]
 
             layer_input.append(input)
-            act_fun = fun.activation_functions[self.act_fun_code_per_layer[i]]
+            act_fun = fun.activation_functions[self.act_fun_codes_per_layer[i]]
             output = act_fun(input)
             layer_output.append(output)
+
+        return layer_input, layer_output
 
     def forward_step(self, x):
         x = x.reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
 
-        conv_inputs, feature_volumes = self.__convolutional_forward_step(x)
-
+        conv_inputs, feature_volumes = self.__convolutional_forward_step(x)         #conv_inputs probabilmente non serve
+        
         feature_map_size = self.__get_feature_map_size(self.n_conv_layers-1)
 
-        input_for_full_conn_forward_step = feature_volumes[self.n_conv_layers-1].flatten()
-        
-        for i in range(len(feature_volumes)):
-            print(feature_volumes[i].shape)
+        input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
+        input_for_full_conn = input_for_full_conn.reshape(-1,1)
 
-        input_for_full_conn_forward_step = input_for_full_conn_forward_step.reshape(-1,1)
-
-        layer_input, layer_output = self.__full_conn_forward_step(input_for_full_conn_forward_step)
+        layer_input, layer_output = self.__full_conn_forward_step(input_for_full_conn)
 
         return conv_inputs, feature_volumes, layer_input, layer_output
 
@@ -265,7 +268,7 @@ class ConvolutionalNet:
 
         print("• conv layers {:>11} layers".format(self.n_conv_layers))
 
-        act_fun = fun.activation_functions[self.act_fun_codes[0]] # da modificare
+        act_fun = fun.activation_functions[self.act_fun_codes_per_layer[0]] # da modificare
         print("• hidden layer: {:>11} nodes".format(self.nodes_per_layer[0]), \
               "{:^10} \t (activation function)".format(act_fun.__name__))
 

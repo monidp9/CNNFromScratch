@@ -3,7 +3,7 @@ import numpy as np
 import sys
 import os
 
-n_activation_functions = 3
+n_activation_functions = 2
 n_error_functions = 2
 
 class NotNumberError(Exception):
@@ -15,8 +15,7 @@ class NotNumberError(Exception):
 def types_of_activation_functions():
     print('\n   Types of activation functions:')
     print('   1] sigmoid')
-    print('   2] identity')
-    print('   3] ReLU\n')
+    print('   2] ReLU\n')
 
 def types_of_error_functions():
     print('\n   Types of error functions:')

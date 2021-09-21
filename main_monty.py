@@ -122,7 +122,6 @@ def max_pooling(x, region_size):
 
     return np.array(pooled_x)
 
-
 x = X[:, 4:5]
 x = x.reshape(28, 28)
 

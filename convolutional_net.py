@@ -85,11 +85,14 @@ class ConvolutionalNet:
         return W
 
     def __padding(self, feature_volume):
-        depth = 1
         if feature_volume.ndim > 2:
             depth = feature_volume.shape[0]
-        rows = feature_volume.shape[1]
-        columns = feature_volume.shape[2]
+            rows = feature_volume.shape[1]
+            columns = feature_volume.shape[2]
+        else:
+            depth = 1
+            rows = feature_volume.shape[0]
+            columns = feature_volume.shape[1]
 
         feature_map = None
         padded_feature_volume = list()

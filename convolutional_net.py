@@ -193,10 +193,5 @@ class ConvolutionalNet:
 
         return conv_inputs, feature_volumes, layer_input, layer_output
 
-
-
-
-        
-
     def print_config(self):
         pass

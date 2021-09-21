@@ -8,18 +8,18 @@ class ConvolutionalNet:
         self.n_input_nodes = 784 # dipende dal dataset: 784
         self.n_output_nodes = 10 # dipende dal dataset: 10
 
-        self.n_conv_layers = n_conv_layers 
+        self.n_conv_layers = n_conv_layers
         self.n_kernels_per_layers = n_kernels_per_layers.copy()
 
         self.KERNEL_SIZE = 3 # si presuppongono kernel uguali di dimensione quadrata
         self.STRIDE = 1         # S: spostamento
-        self.PADDING = 1         # P: padding 
+        self.PADDING = 1         # P: padding
 
 
         self.act_fun_codes = act_fun_codes.copy()
         self.nodes_per_layer = list()
         self.nodes_per_layer.append(n_nodes_hidden_layer)
-        self.nodes_per_layer.append(self.n_output_nodes)        
+        self.nodes_per_layer.append(self.n_output_nodes)
 
         self.error_fun_code = error_fun_code
 
@@ -30,19 +30,18 @@ class ConvolutionalNet:
         self.__initialize_weights_and_bias()
         self.__initialize_kernels()
 
-    def __initialize_kernels(self): 
+    def __initialize_kernels(self):
         for i in range(self.n_conv_layers):
-            self.kernels.append(np.random.uniform(size=(self.KERNEL_SIZE, self.KERNEL_SIZE, 
+            self.kernels.append(np.random.uniform(size=(self.KERNEL_SIZE, self.KERNEL_SIZE,
                                                         self.n_kernels_per_layers[i])))
-
 
     def __initialize_weights_and_bias(self):
         for i in range(2):
             if i == 0:
-                input = 0 # costruire funzione che calcola input 
+                input = 0 # costruire funzione che calcola input
 
                 #last_conv_layer_size = self.__get_feature_map_size(input,self.KERNEL_SIZE,self.PADDING,self.STRIDE)
-                
+
                 self.weights.append(np.random.uniform(size=(self.nodes_per_layer[i],
                                                       input)))
             else:
@@ -51,9 +50,8 @@ class ConvolutionalNet:
 
             self.bias.append(np.random.uniform(size=(self.nodes_per_layer[i], 1)))
 
- 
-    def __get_feature_map_size(w,F,P,S): # w : dimensione input
-        return ((w - F + 2*P) / S) + 1    
+    def __get_feature_map_size(w, F, P, S): # w : dimensione input
+        return ((w - F + 2*P) / S) + 1
 
     def convolution(self, x, kernel, stride=1):
         kernel = np.array(kernel)
@@ -61,19 +59,19 @@ class ConvolutionalNet:
         conv_x = list()
         temp_result = list()
 
-        # padding
-        n_columns = image.shape[1]
+        # padding  AGGIUSTA IMAGE
+        n_columns = x.shape[1]
         vzeros = np.zeros(n_columns)
-        image = np.vstack((image, vzeros))
-        image = np.vstack((vzeros, image))
+        x = np.vstack((x, vzeros))
+        x = np.vstack((vzeros, x))
 
-        n_rows = image.shape[0]
+        n_rows = x.shape[0]
         hzeros = np.zeros((n_rows, 1))
-        image = np.hstack((image, hzeros))
-        image = np.hstack((hzeros, image))
+        x = np.hstack((x, hzeros))
+        x = np.hstack((hzeros, x))
 
-        n_rows = image.shape[0]
-        n_columns = image.shape[1]
+        n_rows = x.shape[0]
+        n_columns = x.shape[1]
 
         for x in range(1, n_rows - 1, stride):
             for y in range(1, n_columns - 1, stride):
@@ -102,5 +100,3 @@ class ConvolutionalNet:
 
     def print_config(self):
         pass
-
-

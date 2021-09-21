@@ -1,3 +1,4 @@
+from os import PRIO_USER
 import numpy as np
 import functions as fun
 
@@ -16,7 +17,7 @@ class ConvolutionalNet:
         self.PADDING = 1                # P: padding
         self.n_full_conn_layers = 2     # impostazione rete shallow full connected
 
-        self.act_fun_codes = act_fun_codes.copy()
+        self.act_fun_codes_per_layer = act_fun_codes.copy()
         self.nodes_per_layer = list()
         self.nodes_per_layer.append(n_hidden_nodes)
         self.nodes_per_layer.append(self.n_output_nodes)
@@ -77,6 +78,8 @@ class ConvolutionalNet:
             output_conv_op = round((W - F + 2*P) / S) + 1                      # output operazione convoluzione
             output_max_pooling_op = round((output_conv_op - F) / F) + 1        # output operazione max pooling
             W = output_max_pooling_op
+        
+        return W
 
         return W
 
@@ -209,14 +212,18 @@ class ConvolutionalNet:
 
         for i in range(self.n_conv_layers) :
             if i == 0 :
-                conv_x = self.__convolution(self, x, self.kernels[i])
+                conv_x = self.__convolution(x, self.kernels[i])
             else :
-                conv_x = self.__convolution(self, feature_volumes[i-1], self.kernels[i])
+                conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i])
 
             conv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
             output = act_fun(conv_x)
-            feature_volumes.append(output)
+
+            pooled_x = self.__max_pooling(conv_x, (self.KERNEL_SIZE,self.KERNEL_SIZE))  # passare unico valore
+
+            feature_volumes.append(pooled_x)
+
 
         return conv_inputs, feature_volumes
 
@@ -224,28 +231,32 @@ class ConvolutionalNet:
         layer_input = list()
         layer_output = list()
 
-        for i in range(self.n_layers):
+        for i in range(self.n_full_conn_layers):
             if i == 0:
                 # calcolo input dei nodi del primo strato nascosto
-                input = np.dot(self.weights[i], x) + self.bias[i]
+                input = np.dot(self.weights[i], x) + self.full_conn_bias[i]
             else:
                 # calcolo input dei nodi di uno strato nascosto generico
-                input = np.dot(self.weights[i], layer_output[i-1]) + self.bias[i]
+                input = np.dot(self.weights[i], layer_output[i-1]) + self.full_conn_bias[i]
 
             layer_input.append(input)
-            act_fun = fun.activation_functions[self.act_fun_code_per_layer[i]]
+            act_fun = fun.activation_functions[self.act_fun_codes_per_layer[i]]
             output = act_fun(input)
             layer_output.append(output)
+
+        return layer_input, layer_output
 
     def forward_step(self, x):
         x = x.reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
 
-        conv_inputs, feature_volumes = self.__convolutional_forward_step(x)
-
+        conv_inputs, feature_volumes = self.__convolutional_forward_step(x)         #conv_inputs probabilmente non serve
+        
         feature_map_size = self.__get_feature_map_size(self.n_conv_layers-1)
-        input_for_full_conn_forward_step = feature_volumes[self.n_conv_layers-1].reshape(feature_map_size,feature_map_size)
 
-        layer_input, layer_output = self.__full_conn_forward_step(input_for_full_conn_forward_step)
+        input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
+        input_for_full_conn = input_for_full_conn.reshape(-1,1)
+
+        layer_input, layer_output = self.__full_conn_forward_step(input_for_full_conn)
 
         return conv_inputs, feature_volumes, layer_input, layer_output
 
@@ -257,7 +268,7 @@ class ConvolutionalNet:
 
         print("• conv layers {:>11} layers".format(self.n_conv_layers))
 
-        act_fun = fun.activation_functions[self.act_fun_codes]
+        act_fun = fun.activation_functions[self.act_fun_codes_per_layer[0]] # da modificare
         print("• hidden layer: {:>11} nodes".format(self.nodes_per_layer[0]), \
               "{:^10} \t (activation function)".format(act_fun.__name__))
 

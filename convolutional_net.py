@@ -77,6 +77,8 @@ class ConvolutionalNet:
             output_conv_op = round((W - F + 2*P) / S) + 1                      # output operazione convoluzione
             output_max_pooling_op = round((output_conv_op - F) / F) + 1        # output operazione max pooling
             W = output_max_pooling_op
+        
+        return W
 
     def __padding(self, feature_volume):
         depth = feature_volume.shape[0]
@@ -104,7 +106,7 @@ class ConvolutionalNet:
 
         return np.array(padded_feature_volume)
 
-    def convolution(self, feature_volume, kernels):
+    def __convolution(self, feature_volume, kernels):
         feature_volume = self.__padding(feature_volume)
 
         depth = feature_volume.shape[0]
@@ -187,9 +189,11 @@ class ConvolutionalNet:
 
         for i in range(self.n_conv_layers) :
             if i == 0 :
-                conv_x = self.__convolution(self, x, self.kernels[i])
+                print(x)
+                print(self.kernels[i])
+                conv_x = self.__convolution(x, self.kernels[i])
             else :
-                conv_x = self.__convolution(self, feature_volumes[i-1], self.kernels[i])
+                conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i])
 
             conv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
@@ -235,7 +239,7 @@ class ConvolutionalNet:
 
         print("• conv layers {:>11} layers".format(self.n_conv_layers))
 
-        act_fun = fun.activation_functions[self.act_fun_codes]
+        act_fun = fun.activation_functions[self.act_fun_codes[0]] # da modificare
         print("• hidden layer: {:>11} nodes".format(self.nodes_per_layer[0]), \
               "{:^10} \t (activation function)".format(act_fun.__name__))
 

@@ -20,9 +20,12 @@ t = utility.get_mnist_labels(t)
 
 
 net = ConvolutionalNet(n_conv_layers = 3, n_kernels_per_layers = [2,3,4], 
-                       n_hidden_nodes = 3, act_fun_codes = [0,0], error_fun_code = [0])
+                       n_hidden_nodes = 3, act_fun_codes = [0,0], error_fun_code = 0)
   
 net.print_config()
+
+conv_inputs, feature_volumes, layer_input, layer_output = net.forward_step(X[:,0])
+
 
 
 X,t = utility.get_random_dataset(X,t,20)

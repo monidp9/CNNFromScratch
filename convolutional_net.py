@@ -140,8 +140,8 @@ class ConvolutionalNet:
 
         for k in range(kernel_depth):
             kernel = kernels[k, :, :]
-            for r in range(1, n_rows - 1, stride):
-                for c in range(1, n_columns - 1, stride):
+            for r in range(1, n_rows - 1, self.STRIDE):
+                for c in range(1, n_columns - 1, self.STRIDE):
                     row_start = r - 1
                     column_start = c - 1
 
@@ -169,7 +169,7 @@ class ConvolutionalNet:
         return conv_feature_volume
 
     # funzione di attivazione
-    def max_pooling(self, feature_volume, region_size):
+    def __max_pooling(self, feature_volume, region_size):
         depth = feature_volume.shape[0]
         n_rows = feature_volume.shape[1]
         n_columns = feature_volume.shape[2]

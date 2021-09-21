@@ -4,10 +4,6 @@ from scipy.special import softmax
 np.seterr(over='ignore')
 
 
-def softmax2(y):
-    exps = np.exp(y)
-    return exps / np.sum(exps)
-
 # funzioni di attivazione
 def identity(x):
     return x

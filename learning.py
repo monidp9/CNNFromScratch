@@ -1,6 +1,7 @@
 import net
 import functions as fun
 import numpy as np
+from copy import deepcopy
 
 
 def __get_delta(net, t, layer_input, layer_output) :
@@ -38,18 +39,8 @@ def __get_weights_bias_deriv(net, x, delta, layer_input, layer_output) :
 
 def standard_gradient_descent(net, weights_deriv, bias_deriv, eta):
     for i in range(net.n_layers):
-        layer_weights = net.weights[i]
-        layer_weights_deriv = weights_deriv[i]
-
-        layer_weights = layer_weights - eta * layer_weights_deriv
-
-        layer_bias = net.bias[i]
-        layer_bias_deriv = bias_deriv[i]
-
-        layer_bias = layer_bias - eta * layer_bias_deriv
-
-        net.weights[i] = layer_weights
-        net.bias[i] = layer_bias
+        net.weights[i] = net.weights[i] - (eta * weights_deriv[i])
+        net.bias[i] = net.bias[i] - (eta * bias_deriv[i])
     return net
 
 def back_propagation(net, x, t):
@@ -61,9 +52,14 @@ def back_propagation(net, x, t):
     return weights_deriv, bias_deriv
 
 def batch_learning(net, X_train, t_train, X_val, t_val):
+<<<<<<< HEAD
+    eta = 0.001
+    n_epochs = 300
+=======
     # possibili iperparametri
     eta = 0.1
     n_epochs = 50
+>>>>>>> 10a11babd6df6adea858eb41eae0af1cd018968a
 
     train_errors = list()
     val_errors = list()
@@ -74,10 +70,11 @@ def batch_learning(net, X_train, t_train, X_val, t_val):
     best_net = net
     min_error = error_fun(y_val, t_val)
 
+    total_weights_deriv = None
+    total_bias_deriv = None
+    n_instances = X_train.shape[1]
+
     for epoch in range(n_epochs):
-        n_instances = X_train.shape[1]
-        total_weights_deriv = None
-        total_bias_deriv = None
 
         # somma delle derivate
         for n in range(n_instances):
@@ -87,13 +84,11 @@ def batch_learning(net, X_train, t_train, X_val, t_val):
             weights_deriv, bias_deriv = back_propagation(net, x, t)
 
             if n == 0:
-                total_weights_deriv = weights_deriv.copy()
-                total_bias_deriv = bias_deriv.copy()
+                total_weights_deriv = deepcopy(weights_deriv)
+                total_bias_deriv = deepcopy(bias_deriv)
             else:
-                for i in range(len(weights_deriv)):
+                for i in range(net.n_layers):
                     total_weights_deriv[i] = np.add(total_weights_deriv[i], weights_deriv[i])
-
-                for i in range(len(bias_deriv)):
                     total_bias_deriv[i] = np.add(total_bias_deriv[i], bias_deriv[i])
 
         net = standard_gradient_descent(net, total_weights_deriv, total_bias_deriv, eta)
@@ -111,6 +106,6 @@ def batch_learning(net, X_train, t_train, X_val, t_val):
 
         if val_error < min_error:
             min_error = val_error
-            best_net = net
+            best_net = deepcopy(net)
 
     return best_net

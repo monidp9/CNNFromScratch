@@ -24,13 +24,13 @@ class Net:
     def __initialize_weights_and_bias(self):
         for i in range(self.n_layers):
             if i == 0:
-                self.weights.append(np.random.normal(size=(self.nodes_per_layer[i],
+                self.weights.append(np.random.uniform(size=(self.nodes_per_layer[i],
                                                      self.n_input_nodes)))
             else:
-                self.weights.append(np.random.normal(size=(self.nodes_per_layer[i],
+                self.weights.append(np.random.uniform(size=(self.nodes_per_layer[i],
                                                      self.nodes_per_layer[i-1])))
 
-            self.bias.append(np.random.normal(size=(self.nodes_per_layer[i], 1)))
+            self.bias.append(np.random.uniform(size=(self.nodes_per_layer[i], 1)))
 
     def forward_step(self, x):
         layer_input = list()

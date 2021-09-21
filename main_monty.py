@@ -54,6 +54,11 @@ t = utility.get_mnist_labels(t)
 
 # --------------CONVOLUZIONE------------------
 def padding(feature_volume):
+    remove_dim = False
+    if feature_volume.ndim < 3:
+        feature_volume = np.expand_dims(feature_volume, axis=0)
+        remove_dim = True
+
     depth = feature_volume.shape[0]
     rows = feature_volume.shape[1]
     columns = feature_volume.shape[2]
@@ -77,11 +82,17 @@ def padding(feature_volume):
 
         padded_feature_volume.append(feature_map)
 
-    return np.array(padded_feature_volume)
+    padded_feature_volume = np.array(padded_feature_volume)
+    if remove_dim:
+        padded_feature_volume = np.squeeze(padded_feature_volume, axis=0)
 
+    return padded_feature_volume
 
 def convolution(feature_volume, kernels, stride=1):
     feature_volume = padding(feature_volume)
+
+    if feature_volume.ndim < 3:
+        feature_volume = np.expand_dims(feature_volume, axis=0)
 
     depth = feature_volume.shape[0]
     n_rows = feature_volume.shape[1]
@@ -126,69 +137,66 @@ def convolution(feature_volume, kernels, stride=1):
         conv_feature_volume.append(feature_map_temp.copy())
         feature_map_temp[:] = []
 
-    return np.array(conv_feature_volume)
+    conv_feature_volume = np.array(conv_feature_volume)
+    return conv_feature_volume
 
-
-def max_pooling(x, region_size):
-    n_rows = x.shape[0]
-    n_columns = x.shape[1]
+def max_pooling(feature_volume, region_size):
+    depth = feature_volume.shape[0]
+    n_rows = feature_volume.shape[1]
+    n_columns = feature_volume.shape[2]
 
     row_stride = region_size[0]
     column_stride = region_size[1]
 
-    pooled_x = list()
-    temp_result = list()
+    pooled_feature_volume = list()
+    feature_temp = list()
+    row_temp = list()
 
-    for i in range(1, n_rows - 1, row_stride):
-        for j in range(1, n_columns - 1, column_stride):
-            row_start = i - 1
-            column_start = j - 1
+    for d in range(depth):
+        for i in range(1, n_rows - 1, row_stride):
+            for j in range(1, n_columns - 1, column_stride):
+                row_start = i - 1
+                column_start = j - 1
 
-            row_finish = row_start + row_stride
-            column_finish = column_start + column_stride
+                row_finish = row_start + row_stride
+                column_finish = column_start + column_stride
 
-            region = x[row_start:row_finish, column_start:column_finish]
-            max = np.max(region)
+                region = feature_volume[d, row_start:row_finish, column_start:column_finish]
+                max = np.max(region)
 
-            temp_result.append(max)
+                row_temp.append(max)
 
-        pooled_x.append(temp_result.copy())
-        temp_result[:] = []
+            feature_temp.append(row_temp.copy())
+            row_temp[:] = []
 
-    return np.array(pooled_x)
+        pooled_feature_volume.append(feature_temp.copy())
+        feature_temp[:] = []
 
-<<<<<<< HEAD
+    return np.array(pooled_feature_volume)
+
 
 x1 = X[:, 0:1]
-x1 = x1.reshape(28, 28)
 x2 = X[:, 1:2]
+x1 = x1.reshape(28, 28)
 x2 = x2.reshape(28, 28)
-x3 = X[:, 2:3]
-x3 = x3.reshape(28, 28)
-=======
-x = X[:, 4:5]
-x = x.reshape(28, 28)
->>>>>>> f5683a6ee67035ec7d698c30522ccf4e8ecc58b4
 
-feature_volume = list()
+feature_volume = []
 feature_volume.append(x1)
 feature_volume.append(x2)
-feature_volume.append(x3)
-
 feature_volume = np.array(feature_volume)
 
-
-kernel = [[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]]
-kernel_volume = list()
-kernel_volume.append(kernel)
-kernel_volume.append(kernel)
-kernel_volume.append(kernel)
-
-kernel_volume = np.array(kernel_volume)
-conv_feature_volume = convolution(feature_volume, kernel_volume)
+k1 = [[0, 0, 0], [0, 1, 0], [0, 0, 0]]
+kernels = []
+kernels.append(k1)
+kernels.append(k1)
+kernels.append(k1)
+kernels = np.array(kernels)
 
 print(feature_volume.shape)
-print(conv_feature_volume.shape)
+# conv_x = convolution(feature_volume, kernels)
+pooled_feature_volume = max_pooling(feature_volume, (3,3))
+print(pooled_feature_volume.shape)
+
 
 
 # conv_x = convolution(x, kernel)

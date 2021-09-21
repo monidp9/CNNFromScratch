@@ -81,22 +81,19 @@ class ConvolutionalNet:
         return W
 
     def __padding(self, feature_volume):
-        if feature_volume.ndim > 2:
-            depth = feature_volume.shape[0]
-            rows = feature_volume.shape[1]
-            columns = feature_volume.shape[2]
-        else:
-            depth = 1
-            rows = feature_volume.shape[0]
-            columns = feature_volume.shape[1]
+        remove_dim = False
+        if feature_volume.ndim < 3:
+            feature_volume = np.expand_dims(feature_volume, axis=0)
+            remove_dim = True
+
+        depth = feature_volume.shape[0]
+        rows = feature_volume.shape[1]
+        columns = feature_volume.shape[2]
 
         feature_map = None
         padded_feature_volume = list()
         for d in range(depth):
-            if feature_volume.ndim > 2:
-                feature_map = feature_volume[d, :, :]
-            else:
-                feature_map = feature_volume[:, :]
+            feature_map = feature_volume[d, :, :]
 
             n_columns = feature_map.shape[1]
             vzeros = np.zeros(n_columns)
@@ -110,15 +107,20 @@ class ConvolutionalNet:
             feature_map = np.hstack((feature_map, hzeros))
             feature_map = np.hstack((hzeros, feature_map))
 
-            if feature_volume.ndim > 2:
-                padded_feature_volume.append(feature_map)
+            padded_feature_volume.append(feature_map)
 
-        if feature_volume.ndim > 2:
-            return np.array(padded_feature_volume)
-        return feature_map
+        padded_feature_volume = np.array(padded_feature_volume)
+        if remove_dim:
+            padded_feature_volume = np.squeeze(padded_feature_volume, axis=0)
 
+        return padded_feature_volume
+
+    # aggiungere il bias
     def __convolution(self, feature_volume, kernels):
         feature_volume = self.__padding(feature_volume)
+
+        if feature_volume.ndim < 3:
+            feature_volume = np.expand_dims(feature_volume, axis=0)
 
         depth = feature_volume.shape[0]
         n_rows = feature_volume.shape[1]
@@ -138,8 +140,8 @@ class ConvolutionalNet:
 
         for k in range(kernel_depth):
             kernel = kernels[k, :, :]
-            for r in range(1, n_rows - 1, self.STRIDE):
-                for c in range(1, n_columns - 1, self.STRIDE):
+            for r in range(1, n_rows - 1, stride):
+                for c in range(1, n_columns - 1, stride):
                     row_start = r - 1
                     column_start = c - 1
 
@@ -148,14 +150,14 @@ class ConvolutionalNet:
 
                     for d in range(depth):
                         region = feature_volume[d, row_start:row_finish, column_start:column_finish]
-                        matrix_prod = np.multiply(region, kernel)
+                        matrix_prod = np.multiply(region, kernel) # + bias
                         if d == 0:
                             matrix_sum = matrix_prod
                         else:
                             matrix_sum = matrix_sum + matrix_prod
 
                     result = np.sum(matrix_sum)
-                    row_temp.append(result)
+                    row_temp.append(result.copy())
 
                 feature_map_temp.append(row_temp.copy())
                 row_temp[:] = []
@@ -163,36 +165,43 @@ class ConvolutionalNet:
             conv_feature_volume.append(feature_map_temp.copy())
             feature_map_temp[:] = []
 
-        return np.array(conv_feature_volume)
+        conv_feature_volume = np.array(conv_feature_volume)
+        return conv_feature_volume
 
     # funzione di attivazione
-    def max_pooling(self, x, region_size):
-        n_rows = x.shape[0]
-        n_columns = x.shape[1]
+    def max_pooling(self, feature_volume, region_size):
+        depth = feature_volume.shape[0]
+        n_rows = feature_volume.shape[1]
+        n_columns = feature_volume.shape[2]
 
         row_stride = region_size[0]
         column_stride = region_size[1]
 
-        pooled_x = list()
-        temp_result = list()
+        pooled_feature_volume = list()
+        feature_temp = list()
+        row_temp = list()
 
-        for i in range(1, n_rows - 1, row_stride):
-            for j in range(1, n_columns - 1, column_stride):
-                row_start = i - 1
-                column_start = j - 1
+        for d in range(depth):
+            for i in range(1, n_rows - 1, row_stride):
+                for j in range(1, n_columns - 1, column_stride):
+                    row_start = i - 1
+                    column_start = j - 1
 
-                row_finish = row_start + row_stride
-                column_finish = column_start + column_stride
+                    row_finish = row_start + row_stride
+                    column_finish = column_start + column_stride
 
-                region = x[row_start:row_finish, column_start:column_finish]
-                max = np.max(region)
+                    region = feature_volume[d, row_start:row_finish, column_start:column_finish]
+                    max = np.max(region)
 
-                temp_result.append(max)
+                    row_temp.append(max)
 
-            pooled_x.append(temp_result.copy())
-            temp_result[:] = []
+                feature_temp.append(row_temp.copy())
+                row_temp[:] = []
 
-        return np.array(pooled_x)
+            pooled_feature_volume.append(feature_temp.copy())
+            feature_temp[:] = []
+
+        return np.array(pooled_feature_volume)
 
     def __convolutional_forward_step(self, x):
         feature_volumes = list()

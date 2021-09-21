@@ -100,7 +100,7 @@ def batch_learning(net, X_train, t_train, X_val, t_val):
 
         y_train = net.sim(X_train)
         y_val = net.sim(X_val)
-
+        
         train_error = error_fun(y_train, t_train)
         val_error = error_fun(y_val, t_val)
 

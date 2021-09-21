@@ -80,8 +80,12 @@ class ConvolutionalNet:
         
         return W
 
+        return W
+
     def __padding(self, feature_volume):
-        depth = feature_volume.shape[0]
+        depth = 1
+        if feature_volume.ndim > 2:
+            depth = feature_volume.shape[0]
         rows = feature_volume.shape[1]
         columns = feature_volume.shape[2]
 
@@ -189,8 +193,6 @@ class ConvolutionalNet:
 
         for i in range(self.n_conv_layers) :
             if i == 0 :
-                print(x)
-                print(self.kernels[i])
                 conv_x = self.__convolution(x, self.kernels[i])
             else :
                 conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i])

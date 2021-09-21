@@ -82,8 +82,12 @@ class ConvolutionalNet:
             output_max_pooling_op = round((output_conv_op - F) / F) + 1        # output operazione max pooling
             W = output_max_pooling_op
 
+        return W
+
     def __padding(self, feature_volume):
-        depth = feature_volume.shape[0]
+        depth = 1
+        if feature_volume.ndim > 2:
+            depth = feature_volume.shape[0]
         rows = feature_volume.shape[1]
         columns = feature_volume.shape[2]
 
@@ -108,7 +112,7 @@ class ConvolutionalNet:
 
         return np.array(padded_feature_volume)
 
-    def convolution(self, feature_volume, kernels):
+    def __convolution(self, feature_volume, kernels):
         feature_volume = self.__padding(feature_volume)
 
         depth = feature_volume.shape[0]

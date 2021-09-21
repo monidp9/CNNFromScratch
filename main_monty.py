@@ -157,6 +157,7 @@ def max_pooling(x, region_size):
 
     return np.array(pooled_x)
 
+<<<<<<< HEAD
 
 x1 = X[:, 0:1]
 x1 = x1.reshape(28, 28)
@@ -164,6 +165,10 @@ x2 = X[:, 1:2]
 x2 = x2.reshape(28, 28)
 x3 = X[:, 2:3]
 x3 = x3.reshape(28, 28)
+=======
+x = X[:, 4:5]
+x = x.reshape(28, 28)
+>>>>>>> f5683a6ee67035ec7d698c30522ccf4e8ecc58b4
 
 feature_volume = list()
 feature_volume.append(x1)

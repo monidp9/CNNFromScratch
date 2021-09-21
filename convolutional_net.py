@@ -1,9 +1,5 @@
 import numpy as np
 import functions as fun
-<<<<<<< HEAD
-
-=======
->>>>>>> f5683a6ee67035ec7d698c30522ccf4e8ecc58b4
 
 class ConvolutionalNet:
     def __init__(self, n_conv_layers, n_kernels_per_layers, n_hidden_nodes, act_fun_codes, error_fun_code):
@@ -97,7 +93,10 @@ class ConvolutionalNet:
         feature_map = None
         padded_feature_volume = list()
         for d in range(depth):
-            feature_map = feature_volume[d, :, :]
+            if feature_volume.ndim > 2:
+                feature_map = feature_volume[d, :, :]
+            else:
+                feature_map = feature_volume[:, :]
 
             n_columns = feature_map.shape[1]
             vzeros = np.zeros(n_columns)
@@ -111,9 +110,12 @@ class ConvolutionalNet:
             feature_map = np.hstack((feature_map, hzeros))
             feature_map = np.hstack((hzeros, feature_map))
 
-            padded_feature_volume.append(feature_map)
+            if feature_volume.ndim > 2:
+                padded_feature_volume.append(feature_map)
 
-        return np.array(padded_feature_volume)
+        if feature_volume.ndim > 2:
+            return np.array(padded_feature_volume)
+        return feature_map
 
     def __convolution(self, feature_volume, kernels):
         feature_volume = self.__padding(feature_volume)

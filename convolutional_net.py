@@ -38,14 +38,14 @@ class ConvolutionalNet:
                                                         self.KERNEL_SIZE, self.KERNEL_SIZE)))
 
             n_nodes_conv_layer = self.__get_n_nodes_feature_volume(i)
+
             self.conv_bias.append(np.random.uniform(size=(n_nodes_conv_layer, 1)))
 
     def __initialize_weights_and_full_conn_bias(self):
         for i in range(self.n_full_conn_layers):
             if i == 0:
-                feature_map_size = self.__get_feature_map_size(self.n_conv_layers)
-                n_nodes_input = np.power(feature_map_size, 2) * self.n_kernels_per_layers[self.n_conv_layers-1]
-
+                n_nodes_input = self.__get_n_nodes_feature_volume(self.n_conv_layers)
+                
                 self.weights.append(np.random.uniform(size=(self.nodes_per_layer[i],
                                                       n_nodes_input)))
             else:
@@ -67,19 +67,6 @@ class ConvolutionalNet:
 
         n_nodes = np.power(W,2) * self.n_kernels_per_layers[n_conv_layer-1]
         return n_nodes
-
-    def __get_feature_map_size(self, n_conv_layer):
-        W = self.MNIST_IMAGE_SIZE
-        F = self.KERNEL_SIZE
-        P = self.PADDING
-        S = self.STRIDE
-
-        for i in range(n_conv_layer) :
-            output_conv_op = round((W - F + 2*P) / S) + 1                      # output operazione convoluzione
-            output_max_pooling_op = round((output_conv_op - F) / F) + 1        # output operazione max pooling
-            W = output_max_pooling_op
-
-        return W
 
     def __padding(self, feature_volume):
         remove_dim = False
@@ -202,14 +189,14 @@ class ConvolutionalNet:
         return np.array(pooled_feature_volume)
 
     def __convolutional_forward_step(self, x):
-        feature_volume = list()
+        feature_volumes = list()
         conv_inputs = list()                    # non so se serve nella back propagation
 
         for i in range(self.n_conv_layers) :
             if i == 0 :
                 conv_x = self.__convolution(x, self.kernels[i])
             else :
-                conv_x = self.__convolution(feature_volume[i-1], self.kernels[i])
+                conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i])
 
             conv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
@@ -217,7 +204,7 @@ class ConvolutionalNet:
 
             pooled_x = self.__max_pooling(conv_x, self.KERNEL_SIZE)
 
-            feature_volume.append(pooled_x)
+            feature_volumes.append(pooled_x)
 
 
         return conv_inputs, feature_volumes
@@ -245,8 +232,6 @@ class ConvolutionalNet:
         x = x.reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
 
         conv_inputs, feature_volumes = self.__convolutional_forward_step(x)         #conv_inputs probabilmente non serve
-
-        feature_map_size = self.__get_feature_map_size(self.n_conv_layers-1)
 
         input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
         input_for_full_conn = input_for_full_conn.reshape(-1, 1)

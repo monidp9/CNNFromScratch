@@ -32,12 +32,14 @@ class ConvolutionalNet:
         self.__initialize_weights_and_full_conn_bias()
         self.__initialize_kernels_and_conv_bias()
 
+
     def __initialize_kernels_and_conv_bias(self):
         for i in range(self.n_conv_layers):
             self.kernels.append(np.random.uniform(size=(self.n_kernels_per_layers[i],
                                                         self.KERNEL_SIZE, self.KERNEL_SIZE)))
 
-            n_nodes_conv_layer = self.__get_n_nodes_feature_volume(i)
+            # valido solo in presenza di pudding (perchè conv_layer ha la stessa dimensione di feature_volume precedente)
+            n_nodes_conv_layer = self.__get_n_nodes_feature_volume(i) 
 
             self.conv_bias.append(np.random.uniform(size=(n_nodes_conv_layer, 1)))
 
@@ -54,6 +56,7 @@ class ConvolutionalNet:
 
             self.full_conn_bias.append(np.random.uniform(size=(self.nodes_per_layer[i], 1)))
 
+    # se  viene passato zero alla funzione, restituisce la dimensione dell'input
     def __get_n_nodes_feature_volume(self, n_conv_layer):
         W = self.MNIST_IMAGE_SIZE
         F = self.KERNEL_SIZE
@@ -65,7 +68,11 @@ class ConvolutionalNet:
             output_max_pooling_op = round((output_conv_op - F) / F) + 1        # output operazione max pooling
             W = output_max_pooling_op
 
-        n_nodes = np.power(W,2) * self.n_kernels_per_layers[n_conv_layer-1]
+        n_nodes = np.power(W,2) 
+        
+        if n_conv_layer != 0 :
+            n_nodes = n_nodes * self.n_kernels_per_layers[n_conv_layer-1]
+
         return n_nodes
 
     def __padding(self, feature_volume):
@@ -103,7 +110,7 @@ class ConvolutionalNet:
 
         return padded_feature_volume
 
-    def __convolution(self, feature_volume, kernels):
+    def __convolution(self, feature_volume, kernels, bias):
         feature_volume = self.__padding(feature_volume)
 
         if feature_volume.ndim < 3:
@@ -194,9 +201,9 @@ class ConvolutionalNet:
 
         for i in range(self.n_conv_layers) :
             if i == 0 :
-                conv_x = self.__convolution(x, self.kernels[i])
+                conv_x = self.__convolution(x, self.kernels[i], self.conv_bias[i])
             else :
-                conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i])
+                conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i], self.conv_bias[i])
 
             conv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
@@ -205,7 +212,6 @@ class ConvolutionalNet:
             pooled_x = self.__max_pooling(output, self.KERNEL_SIZE)
 
             feature_volumes.append(pooled_x)
-
 
         return conv_inputs, feature_volumes
 

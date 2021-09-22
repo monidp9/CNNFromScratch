@@ -24,16 +24,8 @@ net = ConvolutionalNet(n_conv_layers = 3, n_kernels_per_layers = [1,3,4],
 
 net.print_config()
 
-<<<<<<< HEAD
 X,t = utility.get_random_dataset(X,t,20)
 X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.25)
-=======
-
-conv_inputs, feature_volumes, layer_input, layer_output = net.forward_step(X[:,0])
-
-# X,t = utility.get_random_dataset(X,t,20)
-# X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.25)
->>>>>>> 0f12da51808018ffcb62bbde4a9e5b0b503b8d15
 
 
 print(np.maximum(4,5))

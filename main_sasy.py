@@ -26,9 +26,7 @@ net.print_config()
 
 
 conv_inputs, feature_volumes, layer_input, layer_output = net.forward_step(X[:,0])
-#
-#
-#
+
 # X,t = utility.get_random_dataset(X,t,20)
 # X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.25)
 

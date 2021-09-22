@@ -1,4 +1,3 @@
-from os import PRIO_USER
 import numpy as np
 import functions as fun
 
@@ -38,8 +37,8 @@ class ConvolutionalNet:
             self.kernels.append(np.random.uniform(size=(self.n_kernels_per_layers[i],
                                                         self.KERNEL_SIZE, self.KERNEL_SIZE)))
 
-            # valido solo in presenza di pudding (perchè conv_layer ha la stessa dimensione di feature_volume precedente)
-            n_nodes_conv_layer = self.__get_n_nodes_feature_volume(i) 
+            
+            n_nodes_conv_layer = 0
 
             self.conv_bias.append(np.random.uniform(size=(n_nodes_conv_layer, 1)))
 

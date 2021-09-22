@@ -104,16 +104,14 @@ def convolution(feature_volume, kernels, stride=1):
 
     # convolution
     results = list()
-    matrix_sum = None
-
     conv_feature_volume = list()
     feature_map_temp = list()
     row_temp = list()
 
     for k in range(kernel_depth):
         kernel = kernels[k, :, :]
-        for r in range(1, n_rows - 1, stride):
-            for c in range(1, n_columns - 1, stride):
+        for r in range(1, n_rows - 1):
+            for c in range(1, n_columns - 1):
                 row_start = r - 1
                 column_start = c - 1
 
@@ -122,14 +120,14 @@ def convolution(feature_volume, kernels, stride=1):
 
                 for d in range(depth):
                     region = feature_volume[d, row_start:row_finish, column_start:column_finish]
-                    matrix_prod = np.multiply(region, kernel) # + bias
+                    matrix_prod = np.multiply(region, kernel)
                     if d == 0:
                         matrix_sum = matrix_prod
                     else:
                         matrix_sum = matrix_sum + matrix_prod
 
                 result = np.sum(matrix_sum)
-                row_temp.append(result.copy())
+                row_temp.append(result)
 
             feature_map_temp.append(row_temp.copy())
             row_temp[:] = []
@@ -176,33 +174,38 @@ def max_pooling(feature_volume, region_size):
 
 
 x1 = X[:, 0:1]
-x2 = X[:, 1:2]
+# x2 = X[:, 1:2]
+# x3 = X[:, 2:3]
 x1 = x1.reshape(28, 28)
-x2 = x2.reshape(28, 28)
+# x2 = x2.reshape(28, 28)
+# x3 = x3.reshape(28, 28)
 
 feature_volume = []
 feature_volume.append(x1)
-feature_volume.append(x2)
+# feature_volume.append(x2)
+# feature_volume.append(x3)
 feature_volume = np.array(feature_volume)
 
 k1 = [[0, 0, 0], [0, 1, 0], [0, 0, 0]]
 kernels = []
 kernels.append(k1)
-kernels.append(k1)
-kernels.append(k1)
+# kernels.append(k1)
+# kernels.append(k1)
 kernels = np.array(kernels)
 
-print(feature_volume.shape)
-# conv_x = convolution(feature_volume, kernels)
-pooled_feature_volume = max_pooling(feature_volume, (3,3))
-print(pooled_feature_volume.shape)
+conv_x = convolution(feature_volume, kernels)
+print(conv_x.shape)
+pooled_x = max_pooling(conv_x, (3,3))
+print(pooled_x.shape)
 
+conv_x = convolution(pooled_x, kernels)
+print(conv_x.shape)
+pooled_x = max_pooling(conv_x, (3,3))
+print(pooled_x.shape)
 
+# plt.imshow(conv_x[1, :, :], cmap='Greys')
+# plt.show()
 
-# conv_x = convolution(x, kernel)
-# pooled_x = max_pooling(conv_x, (3, 3))
-#
-#
 # fig = plt.figure(figsize=(6, 6))
 #
 # subplot1 = fig.add_subplot(221)

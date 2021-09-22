@@ -19,15 +19,21 @@ X = utility.get_mnist_data(X)
 t = utility.get_mnist_labels(t)
 
 
-net = ConvolutionalNet(n_conv_layers = 3, n_kernels_per_layers = [1,3,4], 
+net = ConvolutionalNet(n_conv_layers = 3, n_kernels_per_layers = [1,3,4],
                        n_hidden_nodes = 3, act_fun_codes = [0,0], error_fun_code = 0)
-  
+
 net.print_config()
+
+<<<<<<< HEAD
+X,t = utility.get_random_dataset(X,t,20)
+X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.25)
+=======
 
 conv_inputs, feature_volumes, layer_input, layer_output = net.forward_step(X[:,0])
 
-X,t = utility.get_random_dataset(X,t,20)
-X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.25)
+# X,t = utility.get_random_dataset(X,t,20)
+# X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.25)
+>>>>>>> 0f12da51808018ffcb62bbde4a9e5b0b503b8d15
 
 
 print(np.maximum(4,5))
@@ -47,13 +53,3 @@ y_test = utility.get_iris_labels(y_test)
 
 net = batch_learning(net, X_train, t_train, X_test, y_test)
 '''
-
-
-
-
-
-
-
-
-
-

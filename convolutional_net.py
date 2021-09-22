@@ -37,14 +37,14 @@ class ConvolutionalNet:
             self.kernels.append(np.random.uniform(size=(self.n_kernels_per_layers[i],
                                                         self.KERNEL_SIZE, self.KERNEL_SIZE)))
 
-            n_nodes_per_conv_layer = self.__get_n_nodes_feature_volume(i)
-            self.conv_bias.append(np.random.uniform(size=(n_nodes_per_conv_layer, 1)))
+            n_nodes_conv_layer = self.__get_n_nodes_feature_volume(i)
+            self.conv_bias.append(np.random.uniform(size=(n_nodes_conv_layer, 1)))
 
     def __initialize_weights_and_full_conn_bias(self):
         for i in range(self.n_full_conn_layers):
             if i == 0:
                 feature_map_size = self.__get_feature_map_size(self.n_conv_layers)
-                n_nodes_input = np.power(feature_map_size,2) * self.n_kernels_per_layers[self.n_conv_layers-1]
+                n_nodes_input = np.power(feature_map_size, 2) * self.n_kernels_per_layers[self.n_conv_layers-1]
 
                 self.weights.append(np.random.uniform(size=(self.nodes_per_layer[i],
                                                       n_nodes_input)))
@@ -78,8 +78,6 @@ class ConvolutionalNet:
             output_conv_op = round((W - F + 2*P) / S) + 1                      # output operazione convoluzione
             output_max_pooling_op = round((output_conv_op - F) / F) + 1        # output operazione max pooling
             W = output_max_pooling_op
-        
-        return W
 
         return W
 
@@ -118,7 +116,6 @@ class ConvolutionalNet:
 
         return padded_feature_volume
 
-    # aggiungere il bias
     def __convolution(self, feature_volume, kernels):
         feature_volume = self.__padding(feature_volume)
 
@@ -135,7 +132,6 @@ class ConvolutionalNet:
 
         # convolution
         results = list()
-        matrix_sum = None
 
         conv_feature_volume = list()
         feature_map_temp = list()
@@ -153,14 +149,14 @@ class ConvolutionalNet:
 
                     for d in range(depth):
                         region = feature_volume[d, row_start:row_finish, column_start:column_finish]
-                        matrix_prod = np.multiply(region, kernel) # + bias
+                        matrix_prod = np.multiply(region, kernel) # + bias in notazione matriciale
                         if d == 0:
                             matrix_sum = matrix_prod
                         else:
                             matrix_sum = matrix_sum + matrix_prod
 
                     result = np.sum(matrix_sum)
-                    row_temp.append(result.copy())
+                    row_temp.append(result)
 
                 feature_map_temp.append(row_temp.copy())
                 row_temp[:] = []
@@ -177,21 +173,20 @@ class ConvolutionalNet:
         n_rows = feature_volume.shape[1]
         n_columns = feature_volume.shape[2]
 
-        row_stride = region_size[0]
-        column_stride = region_size[1]
+        stride = region_size
 
         pooled_feature_volume = list()
         feature_temp = list()
         row_temp = list()
 
         for d in range(depth):
-            for i in range(1, n_rows - 1, row_stride):
-                for j in range(1, n_columns - 1, column_stride):
+            for i in range(1, n_rows - 1, stride):
+                for j in range(1, n_columns - 1, stride):
                     row_start = i - 1
                     column_start = j - 1
 
-                    row_finish = row_start + row_stride
-                    column_finish = column_start + column_stride
+                    row_finish = row_start + stride
+                    column_finish = column_start + stride
 
                     region = feature_volume[d, row_start:row_finish, column_start:column_finish]
                     max = np.max(region)
@@ -207,22 +202,22 @@ class ConvolutionalNet:
         return np.array(pooled_feature_volume)
 
     def __convolutional_forward_step(self, x):
-        feature_volumes = list()
+        feature_volume = list()
         conv_inputs = list()                    # non so se serve nella back propagation
 
         for i in range(self.n_conv_layers) :
             if i == 0 :
                 conv_x = self.__convolution(x, self.kernels[i])
             else :
-                conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i])
+                conv_x = self.__convolution(feature_volume[i-1], self.kernels[i])
 
             conv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
-            output = act_fun(conv_x)
+            output = act_fun(conv_x) # che fine fa output?
 
-            pooled_x = self.__max_pooling(conv_x, (self.KERNEL_SIZE,self.KERNEL_SIZE))  # passare unico valore
+            pooled_x = self.__max_pooling(conv_x, self.KERNEL_SIZE)
 
-            feature_volumes.append(pooled_x)
+            feature_volume.append(pooled_x)
 
 
         return conv_inputs, feature_volumes
@@ -250,11 +245,11 @@ class ConvolutionalNet:
         x = x.reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
 
         conv_inputs, feature_volumes = self.__convolutional_forward_step(x)         #conv_inputs probabilmente non serve
-        
+
         feature_map_size = self.__get_feature_map_size(self.n_conv_layers-1)
 
         input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
-        input_for_full_conn = input_for_full_conn.reshape(-1,1)
+        input_for_full_conn = input_for_full_conn.reshape(-1, 1)
 
         layer_input, layer_output = self.__full_conn_forward_step(input_for_full_conn)
 
@@ -264,15 +259,17 @@ class ConvolutionalNet:
         print('\nYOUR NETWORK')
         print('-'*100)
 
-        print("• input layer: {:>11} nodes".format(self.n_input_nodes))
+        print("• input layer: {:>12} nodes".format(self.n_input_nodes))
 
-        print("• conv layers {:>11} layers".format(self.n_conv_layers))
+        print("• conv layers {:>13} layers".format(self.n_conv_layers))
 
         act_fun = fun.activation_functions[self.act_fun_codes_per_layer[0]] # da modificare
         print("• hidden layer: {:>11} nodes".format(self.nodes_per_layer[0]), \
               "{:^10} \t (activation function)".format(act_fun.__name__))
 
-        print("• output layer: {:>11} nodes".format(self.nodes_per_layer[0]))
+        act_fun = fun.activation_functions[self.act_fun_codes_per_layer[1]]
+        print("• output layer: {:>11} nodes".format(self.nodes_per_layer[1]), \
+              "{:^10} \t (activation function)".format(act_fun.__name__))
 
         error_fun = fun.error_functions[self.error_fun_code]
         error_fun = error_fun.__name__

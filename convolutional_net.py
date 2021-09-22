@@ -1,4 +1,5 @@
 from os import PRIO_USER
+from math import sqrt
 import numpy as np
 import functions as fun
 
@@ -38,9 +39,7 @@ class ConvolutionalNet:
             self.kernels.append(np.random.uniform(size=(self.n_kernels_per_layers[i],
                                                         self.KERNEL_SIZE, self.KERNEL_SIZE)))
 
-            # valido solo in presenza di pudding (perchè conv_layer ha la stessa dimensione di feature_volume precedente)
-            n_nodes_conv_layer = self.__get_n_nodes_feature_volume(i)
-
+            n_nodes_conv_layer = self.__get_n_nodes_feature_volume_pre_pooling(i)
             self.conv_bias.append(np.random.uniform(size=(n_nodes_conv_layer, 1)))
 
     def __initialize_weights_and_full_conn_bias(self):
@@ -56,7 +55,6 @@ class ConvolutionalNet:
 
             self.full_conn_bias.append(np.random.uniform(size=(self.nodes_per_layer[i], 1)))
 
-    # se  viene passato zero alla funzione, restituisce la dimensione dell'input
     def __get_n_nodes_feature_volume(self, n_conv_layer):
         W = self.MNIST_IMAGE_SIZE
         F = self.KERNEL_SIZE
@@ -64,14 +62,36 @@ class ConvolutionalNet:
         S = self.STRIDE
 
         for i in range(n_conv_layer) :
-            output_conv_op = round((W - F + 2*P) / S) + 1                      # output operazione convoluzione
-            output_max_pooling_op = round((output_conv_op - F) / F) + 1        # output operazione max pooling
+            # output operazione convoluzione
+            output_conv_op = round((W - F + 2*P) / S) + 1
+            # output operazione max pooling
+            output_max_pooling_op = round((output_conv_op - F) / F) + 1
             W = output_max_pooling_op
 
         n_nodes = np.power(W,2)
+        n_nodes = n_nodes * self.n_kernels_per_layers[n_conv_layer-1]
 
-        if n_conv_layer != 0 :
-            n_nodes = n_nodes * self.n_kernels_per_layers[n_conv_layer-1]
+        return n_nodes
+
+    def __get_n_nodes_feature_volume_pre_pooling(self, n_conv_layer):
+        W = self.MNIST_IMAGE_SIZE
+        F = self.KERNEL_SIZE
+        P = self.PADDING
+        S = self.STRIDE
+
+        for i in range(n_conv_layer + 1) :
+            if i != n_conv_layer:
+                # output operazione convoluzione
+                output_conv_op = round((W - F + 2*P) / S) + 1
+                # output operazione max pooling
+                output_max_pooling_op = round((output_conv_op - F) / F) + 1
+                W = output_max_pooling_op
+            else:
+                output_conv_op = round((W - F + 2*P) / S) + 1
+                W = output_conv_op
+
+        n_nodes = np.power(W, 2)
+        n_nodes = n_nodes * self.n_kernels_per_layers[n_conv_layer]
 
         return n_nodes
 
@@ -129,6 +149,7 @@ class ConvolutionalNet:
         conv_feature_volume = list()
         feature_map_temp = list()
         row_temp = list()
+        bias_index = 0
 
         for k in range(kernel_depth):
             kernel = kernels[k, :, :]
@@ -148,8 +169,9 @@ class ConvolutionalNet:
                         else:
                             matrix_sum = matrix_sum + matrix_prod
 
-                    result = np.sum(matrix_sum)
+                    result = np.sum(matrix_sum) + bias[bias_index]
                     row_temp.append(result)
+                    bias_index += 1
 
                 feature_map_temp.append(row_temp.copy())
                 row_temp[:] = []
@@ -158,10 +180,8 @@ class ConvolutionalNet:
             feature_map_temp[:] = []
 
         conv_feature_volume = np.array(conv_feature_volume)
-        print(conv_feature_volume[0].shape)
         return conv_feature_volume
 
-    # funzione di attivazione
     def __max_pooling(self, feature_volume, region_size):
         depth = feature_volume.shape[0]
         n_rows = feature_volume.shape[1]

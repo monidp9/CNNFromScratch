@@ -198,6 +198,11 @@ print(conv_x.shape)
 pooled_x = max_pooling(conv_x, (3,3))
 print(pooled_x.shape)
 
+conv_x = convolution(pooled_x, kernels)
+print(conv_x.shape)
+pooled_x = max_pooling(conv_x, (3,3))
+print(pooled_x.shape)
+
 # plt.imshow(conv_x[1, :, :], cmap='Greys')
 # plt.show()
 

@@ -45,7 +45,7 @@ class ConvolutionalNet:
         for i in range(self.n_full_conn_layers):
             if i == 0:
                 n_nodes_input = self.__get_n_nodes_feature_volume(self.n_conv_layers)
-                
+
                 self.weights.append(np.random.uniform(size=(self.nodes_per_layer[i],
                                                       n_nodes_input)))
             else:
@@ -200,9 +200,9 @@ class ConvolutionalNet:
 
             conv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
-            output = act_fun(conv_x) # che fine fa output?
+            output = act_fun(conv_x) 
 
-            pooled_x = self.__max_pooling(conv_x, self.KERNEL_SIZE)
+            pooled_x = self.__max_pooling(output, self.KERNEL_SIZE)
 
             feature_volumes.append(pooled_x)
 
@@ -241,7 +241,7 @@ class ConvolutionalNet:
         return conv_inputs, feature_volumes, layer_input, layer_output
 
     def print_config(self):
-        print('\nYOUR NETWORK')
+        print('\nYOUR CONVOLUTIONAL NETWORK')
         print('-'*100)
 
         print("• input layer: {:>12} nodes".format(self.n_input_nodes))

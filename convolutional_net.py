@@ -132,7 +132,6 @@ class ConvolutionalNet:
 
         # convolution
         results = list()
-
         conv_feature_volume = list()
         feature_map_temp = list()
         row_temp = list()
@@ -149,7 +148,7 @@ class ConvolutionalNet:
 
                     for d in range(depth):
                         region = feature_volume[d, row_start:row_finish, column_start:column_finish]
-                        matrix_prod = np.multiply(region, kernel) # + bias in notazione matriciale
+                        matrix_prod = np.multiply(region, kernel)
                         if d == 0:
                             matrix_sum = matrix_prod
                         else:
@@ -165,6 +164,7 @@ class ConvolutionalNet:
             feature_map_temp[:] = []
 
         conv_feature_volume = np.array(conv_feature_volume)
+        print(conv_feature_volume[0].shape)
         return conv_feature_volume
 
     # funzione di attivazione
@@ -202,22 +202,22 @@ class ConvolutionalNet:
         return np.array(pooled_feature_volume)
 
     def __convolutional_forward_step(self, x):
-        feature_volume = list()
+        feature_volumes = list()
         conv_inputs = list()                    # non so se serve nella back propagation
 
         for i in range(self.n_conv_layers) :
             if i == 0 :
                 conv_x = self.__convolution(x, self.kernels[i])
             else :
-                conv_x = self.__convolution(feature_volume[i-1], self.kernels[i])
+                conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i])
 
             conv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
             output = act_fun(conv_x) # che fine fa output?
 
-            pooled_x = self.__max_pooling(conv_x, self.KERNEL_SIZE)
+            pooled_x = self.__max_pooling(output, self.KERNEL_SIZE)
 
-            feature_volume.append(pooled_x)
+            feature_volumes.append(pooled_x)
 
 
         return conv_inputs, feature_volumes
@@ -270,6 +270,10 @@ class ConvolutionalNet:
         act_fun = fun.activation_functions[self.act_fun_codes_per_layer[1]]
         print("• output layer: {:>11} nodes".format(self.nodes_per_layer[1]), \
               "{:^10} \t (activation function)".format(act_fun.__name__))
+
+        print('\n')
+        for i in range(len(self.n_kernels_per_layers)):
+            print('• conv layer {}: {:>11} kernels'.format(i, self.n_kernels_per_layers[i]))
 
         error_fun = fun.error_functions[self.error_fun_code]
         error_fun = error_fun.__name__

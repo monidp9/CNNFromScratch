@@ -69,7 +69,7 @@ class Net:
         return output
 
     def print_config(self):
-        print('\nYOUR NETWORK')
+        print('\nYOUR MULTILAYER NETWORK')
         print('-'*100)
 
         print("• input layer: {:>11} nodes".format(self.n_input_nodes))

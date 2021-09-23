@@ -26,7 +26,7 @@ def __get_delta(net, t, layer_input, layer_output) :
 
     return delta
 
-def __get_weights_bias_deriv(net, x, delta, layer_input, layer_output) :
+def __get_weights_bias_deriv(net, x, delta, layer_output) :
     weights_deriv = []
     bias_deriv = []
 
@@ -102,7 +102,7 @@ def back_propagation(net, x, t):
     # x: singola istanza
     layer_input, layer_output = net.forward_step(x)
     delta = __get_delta(net, t, layer_input, layer_output)
-    weights_deriv, bias_deriv = __get_weights_bias_deriv(net, x, delta, layer_input, layer_output)
+    weights_deriv, bias_deriv = __get_weights_bias_deriv(net, x, delta, layer_output)
 
     return weights_deriv, bias_deriv
 

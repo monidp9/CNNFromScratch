@@ -217,7 +217,7 @@ class ConvolutionalNet:
 
     def __convolutional_forward_step(self, x):
         feature_volumes = list()
-        conv_inputs = list()                    # non so se serve nella back propagation
+        conv_inputs = list()
 
         for i in range(self.n_conv_layers) :
             if i == 0 :
@@ -230,7 +230,6 @@ class ConvolutionalNet:
             output = act_fun(conv_x)
 
             pooled_x = self.__max_pooling(output, self.KERNEL_SIZE)
-
             feature_volumes.append(pooled_x)
 
         return conv_inputs, feature_volumes
@@ -257,10 +256,10 @@ class ConvolutionalNet:
     def forward_step(self, x):
         x = x.reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
 
-        conv_inputs, feature_volumes = self.__convolutional_forward_step(x)         #conv_inputs probabilmente non serve
+        conv_inputs, feature_volumes = self.__convolutional_forward_step(x)
 
-        input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
-        input_for_full_conn = input_for_full_conn.reshape(-1, 1)
+        flattened_input = feature_volumes[self.n_conv_layers-1].flatten()
+        flattened_input = input_for_full_conn.reshape(-1, 1)
 
         layer_input, layer_output = self.__full_conn_forward_step(input_for_full_conn)
 

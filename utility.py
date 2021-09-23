@@ -3,29 +3,23 @@ import numpy as np
 import sys
 import os
 
-n_activation_functions = 2
-n_error_functions = 2
-
-class NotNumberError(Exception):
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
+n_activation_functions = 3
+n_error_functions = 3
 
 def types_of_activation_functions():
     print('\n   Types of activation functions:')
     print('   1] sigmoid')
-    print('   2] ReLU\n')
+    print('   2] identity')
+    print('   3] ReLU\n')
 
 def types_of_error_functions():
     print('\n   Types of error functions:')
     print('   1] Cross Entropy')
-    print('   2] Sum of Squares\n')
+    print('   2] Cross Entropy Soft Max')
+    print('   3] Sum of Squares\n')
 
 def check_int_input(value, min_value,max_value):
-    if not value.isnumeric():
-        raise NotNumberError(value)
-    if not int(value) >= min_value or not int(value) <= max_value:
+    if not value.isnumeric() or (not int(value) >= min_value or not int(value) <= max_value) :
         raise ValueError
 
 def get_int_input(string, min_value, max_value=sys.maxsize) :
@@ -37,13 +31,11 @@ def get_int_input(string, min_value, max_value=sys.maxsize) :
             check_int_input(value, min_value, max_value)
             flag = True
         except ValueError:
-            print('invalid number!')
-        except NotNumberError as e:
-            print('invalid value, input must be a positive number!')
+            print('invalid input!\n')
 
     return int(value)
 
-def get_configuration_net():
+def get_configuration_multilayer_net():
     print('\n\n\n')
     print('-'*40, 'NEURAL NETWORK PROJECT', '-'*40, '\n'
      '\t\t\t\t creation of a multilayer neural network\n\n\n')
@@ -79,6 +71,45 @@ def get_configuration_net():
     os.system('clear')
 
     return n_hidden_layers, n_hidden_nodes_per_layer, act_fun_codes, error_fun_code
+
+def get_configuration_conv_net():
+    print('\n\n\n')
+    print('-'*40, 'NEURAL NETWORK PROJECT', '-'*40, '\n'
+     '\t\t\t\t creation of a convolutional neural network\n\n\n')
+
+
+    n_conv_layers = get_int_input('define the number of convolutional layers (min value = 1): ',1)
+
+    print('\nfor each convolutional layer define the number of kernels\n')
+
+    n_kernels_per_layer = list()
+    act_fun_codes = list()
+
+    for i in range(n_conv_layers):
+        print('convlutional layer', i+1, ':')
+
+        n_kernels= get_int_input('-  number of kernels: ',1)
+        n_kernels_per_layer.append(int(n_kernels))
+   
+    print("\nfor full connected layers define the numbers of nodes and the activation function")
+    types_of_activation_functions()
+
+    print('hidden layer :')
+    act_fun_code = get_int_input('-  choose activaction function for hidden layer: ',1, n_activation_functions) - 1
+    act_fun_codes.append(act_fun_code)
+
+    n_hiddden_nodes= get_int_input('-  number of nodes: ',1)
+
+    print('\noutput layer :')
+    act_fun_code = get_int_input('-  choose activaction function for output layer: ',1, n_activation_functions) - 1
+    act_fun_codes.append(act_fun_code)
+
+    types_of_error_functions()
+    error_fun_code = get_int_input('-  define the error function: ',1, n_error_functions) - 1
+
+    os.system('clear')
+
+    return n_conv_layers, n_kernels_per_layer, n_hiddden_nodes, act_fun_codes, error_fun_code
 
 def get_mnist_data(data):
     data = np.array(data)

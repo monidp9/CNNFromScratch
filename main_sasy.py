@@ -1,7 +1,6 @@
 from functions import cross_entropy
-from os import get_terminal_size
 from learning import back_propagation
-from learning import batch_learning
+from learning import conv_batch_learning
 
 import utility
 import numpy as np
@@ -19,29 +18,14 @@ X = utility.get_mnist_data(X)
 t = utility.get_mnist_labels(t)
 
 
-net = ConvolutionalNet(n_conv_layers = 3, n_kernels_per_layers = [1,3,4],
-                       n_hidden_nodes = 3, act_fun_codes = [0,0], error_fun_code = 0)
+n_conv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code = utility.get_configuration_conv_net()
+
+net = ConvolutionalNet(n_conv_layers = n_conv_layers, n_kernels_per_layer = n_kernels_per_layer,
+                       n_hidden_nodes = 3, act_fun_codes = act_fun_codes, error_fun_code = error_fun_code)
 
 net.print_config()
 
 X,t = utility.get_random_dataset(X,t,20)
 X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.25)
 
-
-print(np.maximum(4,5))
-
-'''
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-
-X,t = load_iris(return_X_y=True)
-
-X_train, X_test, y_train, y_test = train_test_split(X, t)
-X_train = np.transpose(X_train)
-t_train = utility.get_iris_labels(y_train)
-
-X_test = np.transpose(X_test)
-y_test = utility.get_iris_labels(y_test)
-
-net = batch_learning(net, X_train, t_train, X_test, y_test)
-'''
+# net = conv_batch_learning(net, X_train, t_train, X_test, t_test)

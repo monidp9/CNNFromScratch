@@ -20,7 +20,6 @@ class Net:
 
         self.__initialize_weights_and_bias()
 
-
     def __initialize_weights_and_bias(self):
         for i in range(self.n_layers):
             if i == 0:

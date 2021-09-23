@@ -227,7 +227,9 @@ class ConvolutionalNet:
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
             output = act_fun(conv_x)
 
-            pooled_x = self.__max_pooling(output, self.KERNEL_SIZE)
+            # teoricamente bisognerebbe applicare la funzione di attivazione che in questo 
+            # caso è la funzione identità quindi non viene considerata            
+            pooled_x = self.__max_pooling(output, self.KERNEL_SIZE) 
 
             feature_volumes.append(pooled_x)
 

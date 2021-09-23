@@ -1,15 +1,14 @@
-from os import PRIO_USER
 from math import sqrt
 import numpy as np
 import functions as fun
 
 class ConvolutionalNet:
-    def __init__(self, n_conv_layers, n_kernels_per_layers, n_hidden_nodes, act_fun_codes, error_fun_code):
+    def __init__(self, n_conv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code):
         self.n_input_nodes = 784        # dipende dal dataset: 784
         self.n_output_nodes = 10        # dipende dal dataset: 10
 
         self.n_conv_layers = n_conv_layers
-        self.n_kernels_per_layers = n_kernels_per_layers.copy()
+        self.n_kernels_per_layer = n_kernels_per_layer.copy()
 
         self.CONV_ACT_FUN_CODE = 1
         self.MNIST_IMAGE_SIZE = 28
@@ -33,19 +32,18 @@ class ConvolutionalNet:
         self.__initialize_weights_and_full_conn_bias()
         self.__initialize_kernels_and_conv_bias()
 
-
     def __initialize_kernels_and_conv_bias(self):
         for i in range(self.n_conv_layers):
-            self.kernels.append(np.random.uniform(size=(self.n_kernels_per_layers[i],
+            self.kernels.append(np.random.uniform(size=(self.n_kernels_per_layer[i],
                                                         self.KERNEL_SIZE, self.KERNEL_SIZE)))
 
-            n_nodes_conv_layer = self.__get_n_nodes_feature_volume_pre_pooling(i)
+            n_nodes_conv_layer = self.get_n_nodes_feature_volume_pre_pooling(i)
             self.conv_bias.append(np.random.uniform(size=(n_nodes_conv_layer, 1)))
 
     def __initialize_weights_and_full_conn_bias(self):
         for i in range(self.n_full_conn_layers):
             if i == 0:
-                n_nodes_input = self.__get_n_nodes_feature_volume(self.n_conv_layers)
+                n_nodes_input = self.get_n_nodes_feature_volume(self.n_conv_layers)
 
                 self.weights.append(np.random.uniform(size=(self.nodes_per_layer[i],
                                                       n_nodes_input)))
@@ -55,7 +53,7 @@ class ConvolutionalNet:
 
             self.full_conn_bias.append(np.random.uniform(size=(self.nodes_per_layer[i], 1)))
 
-    def __get_n_nodes_feature_volume(self, n_conv_layer):
+    def get_n_nodes_feature_volume(self, n_conv_layer):
         W = self.MNIST_IMAGE_SIZE
         F = self.KERNEL_SIZE
         P = self.PADDING
@@ -69,11 +67,11 @@ class ConvolutionalNet:
             W = output_max_pooling_op
 
         n_nodes = np.power(W,2)
-        n_nodes = n_nodes * self.n_kernels_per_layers[n_conv_layer-1]
+        n_nodes = n_nodes * self.n_kernels_per_layer[n_conv_layer-1]
 
         return n_nodes
 
-    def __get_n_nodes_feature_volume_pre_pooling(self, n_conv_layer):
+    def get_n_nodes_feature_volume_pre_pooling(self, n_conv_layer):
         W = self.MNIST_IMAGE_SIZE
         F = self.KERNEL_SIZE
         P = self.PADDING
@@ -91,7 +89,7 @@ class ConvolutionalNet:
                 W = output_conv_op
 
         n_nodes = np.power(W, 2)
-        n_nodes = n_nodes * self.n_kernels_per_layers[n_conv_layer]
+        n_nodes = n_nodes * self.n_kernels_per_layer[n_conv_layer]
 
         return n_nodes
 
@@ -229,7 +227,10 @@ class ConvolutionalNet:
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
             output = act_fun(conv_x)
 
+            # teoricamente bisognerebbe applicare la funzione di attivazione che in questo
+            # caso è la funzione identità quindi non viene considerata
             pooled_x = self.__max_pooling(output, self.KERNEL_SIZE)
+
             feature_volumes.append(pooled_x)
 
         return conv_inputs, feature_volumes
@@ -253,17 +254,52 @@ class ConvolutionalNet:
 
         return layer_input, layer_output
 
-    def forward_step(self, x):
-        x = x.reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
+    def forward_step(self, X):
+        new_X = np.empty(shape=(X.shape[1],self.MNIST_IMAGE_SIZE,self.MNIST_IMAGE_SIZE))
 
-        conv_inputs, feature_volumes = self.__convolutional_forward_step(x)
+        tot_conv_inputs = list()
+        tot_feature_volumes = list()
+        tot_layer_input = list()
+        tot_layer_output = list()
 
-        flattened_input = feature_volumes[self.n_conv_layers-1].flatten()
-        flattened_input = input_for_full_conn.reshape(-1, 1)
+        for i in range(X.shape[1]):
+            new_X[i,:,:] = X[:,i].reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
 
-        layer_input, layer_output = self.__full_conn_forward_step(input_for_full_conn)
+        for i in range(new_X.shape[0]) :
 
-        return conv_inputs, feature_volumes, layer_input, layer_output
+            conv_inputs, feature_volumes = self.__convolutional_forward_step(new_X[i])         #conv_inputs probabilmente non serve
+
+            input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
+            input_for_full_conn = input_for_full_conn.reshape(-1, 1)
+
+            layer_input, layer_output = self.__full_conn_forward_step(input_for_full_conn)
+
+            tot_conv_inputs.append(conv_inputs)
+            tot_feature_volumes.append(feature_volumes)
+            tot_layer_input.append(layer_input)
+            tot_layer_output.append(layer_output)
+
+        return tot_conv_inputs, tot_feature_volumes, tot_layer_input, tot_layer_output
+
+    def sim(self, X):
+        new_X = np.empty(shape=(X.shape[1],self.MNIST_IMAGE_SIZE,self.MNIST_IMAGE_SIZE))
+        tot_layer_output = list()
+
+        for i in range(X.shape[1]):
+            new_X[i,:,:] = X[:,i].reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
+
+        for i in range(new_X.shape[0]) :
+
+            _, feature_volumes = self.__convolutional_forward_step(new_X[i])         #conv_inputs probabilmente non serve
+
+            input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
+            input_for_full_conn = input_for_full_conn.reshape(-1, 1)
+
+            _, layer_output = self.__full_conn_forward_step(input_for_full_conn)
+
+            tot_layer_output.append(layer_output[self.n_full_conn_layers-1])
+
+        return tot_layer_output
 
     def print_config(self):
         print('\nYOUR CONVOLUTIONAL NETWORK')
@@ -282,8 +318,8 @@ class ConvolutionalNet:
               "{:^10} \t (activation function)".format(act_fun.__name__))
 
         print('\n')
-        for i in range(len(self.n_kernels_per_layers)):
-            print('• conv layer {}: {:>11} kernels'.format(i, self.n_kernels_per_layers[i]))
+        for i in range(len(self.n_kernels_per_layer)):
+            print('• conv layer {}: {:>11} kernels'.format(i, self.n_kernels_per_layer[i]))
 
         error_fun = fun.error_functions[self.error_fun_code]
         error_fun = error_fun.__name__

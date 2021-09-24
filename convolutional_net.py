@@ -133,56 +133,50 @@ class ConvolutionalNet:
         return padded_feature_volume
 
     def __convolution(self, feature_volume, kernels, bias):
+        # kernels quadrimensionale del layer
         feature_volume = self.__padding(feature_volume)
 
         if feature_volume.ndim < 3:
             feature_volume = np.expand_dims(feature_volume, axis=0)
 
-        depth = feature_volume.shape[0]
         n_rows = feature_volume.shape[1]
         n_columns = feature_volume.shape[2]
 
-        kernel_depth =  kernels.shape[0]
-        kernel_rows = kernels.shape[1]
-        kernel_columns = kernels.shape[2]
-
         # convolution
-        results = list()
+        b_index = 0
+        n_kernels = kernels.shape[0]
+        feature_map = list()
+        feature_map_row = list()
         conv_feature_volume = list()
-        feature_map_temp = list()
-        row_temp = list()
-        bias_index = 0
 
-        for k in range(kernel_depth):
-            kernel = kernels[k, :, :]
-            for r in range(1, n_rows - 1, self.STRIDE):
-                for c in range(1, n_columns - 1, self.STRIDE):
-                    row_start = r - 1
-                    column_start = c - 1
+        for k in range(n_kernels):
+            kernel = kernels[k]
+            k_rows = kernels.shape[1]
+            k_columns = kernels.shape[2]
 
-                    row_finish = row_start + kernel_rows
-                    column_finish = column_start + kernel_columns
+            for i in range(1, n_rows - 1, self.STRIDE):
+                row_start = i - 1
+                row_finish = row_start + k_rows
 
-                    for d in range(depth):
-                        region = feature_volume[d, row_start:row_finish, column_start:column_finish]
-                        matrix_prod = np.multiply(region, kernel)
-                        if d == 0:
-                            matrix_sum = matrix_prod
-                        else:
-                            matrix_sum = matrix_sum + matrix_prod
+                for j in range(1, n_columns - 1, self.STRIDE):
+                    column_start = j - 1
+                    column_finish = column_start + k_columns
 
-                    result = np.sum(matrix_sum) + bias[bias_index]
-                    row_temp.append(result)
-                    bias_index += 1
+                    region = feature_volume[:, row_start:row_finish, column_start:column_finish]
 
-                feature_map_temp.append(row_temp.copy())
-                row_temp[:] = []
+                    region = np.multiply(region, kernel)
+                    node = np.sum(region) + bias[b_index]
+                    b_index += 1
 
-            conv_feature_volume.append(feature_map_temp.copy())
-            feature_map_temp[:] = []
+                    feature_map_row.append(node)
 
-        conv_feature_volume = np.array(conv_feature_volume)
-        return conv_feature_volume
+                feature_map.append(feature_map_row)
+                feature_map_row[:] = []
+
+            conv_feature_volume.append(feature_map)
+            feature_map[:] = []
+
+        return np.array(conv_feature_volume)
 
     def __max_pooling(self, feature_volume, region_size):
         depth = feature_volume.shape[0]
@@ -219,7 +213,7 @@ class ConvolutionalNet:
 
     def __convolutional_forward_step(self, x):
         feature_volumes = list()
-        conv_inputs = list()                    # non so se serve nella back propagation
+        conv_inputs = list()
 
         for i in range(self.n_conv_layers) :
             if i == 0 :
@@ -231,9 +225,9 @@ class ConvolutionalNet:
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
             output = act_fun(conv_x)
 
-            # teoricamente bisognerebbe applicare la funzione di attivazione che in questo 
-            # caso è la funzione identità quindi non viene considerata            
-            pooled_x = self.__max_pooling(output, self.KERNEL_SIZE) 
+            # teoricamente bisognerebbe applicare la funzione di attivazione che in questo
+            # caso è la funzione identità quindi non viene considerata
+            pooled_x = self.__max_pooling(output, self.KERNEL_SIZE)
 
             feature_volumes.append(pooled_x)
 
@@ -258,9 +252,9 @@ class ConvolutionalNet:
 
         return layer_input, layer_output
 
-    def forward_step(self, X): 
+    def forward_step(self, X):
         new_X = np.empty(shape=(X.shape[1],self.MNIST_IMAGE_SIZE,self.MNIST_IMAGE_SIZE))
-        
+
         tot_conv_inputs = list()
         tot_feature_volumes = list()
         tot_layer_input = list()
@@ -270,7 +264,7 @@ class ConvolutionalNet:
             new_X[i,:,:] = X[:,i].reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
 
         for i in range(new_X.shape[0]) :
-        
+
             conv_inputs, feature_volumes = self.__convolutional_forward_step(new_X[i])         #conv_inputs probabilmente non serve
 
             input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
@@ -282,10 +276,10 @@ class ConvolutionalNet:
             tot_feature_volumes.append(feature_volumes)
             tot_layer_input.append(layer_input)
             tot_layer_output.append(layer_output)
-        
+
         return tot_conv_inputs, tot_feature_volumes, tot_layer_input, tot_layer_output
 
-    def sim(self, X): 
+    def sim(self, X):
         new_X = np.empty(shape=(X.shape[1],self.MNIST_IMAGE_SIZE,self.MNIST_IMAGE_SIZE))
         tot_layer_output = list()
 
@@ -293,7 +287,7 @@ class ConvolutionalNet:
             new_X[i,:,:] = X[:,i].reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
 
         for i in range(new_X.shape[0]) :
-        
+
             _, feature_volumes = self.__convolutional_forward_step(new_X[i])         #conv_inputs probabilmente non serve
 
             input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
@@ -302,9 +296,9 @@ class ConvolutionalNet:
             _, layer_output = self.__full_conn_forward_step(input_for_full_conn)
 
             tot_layer_output.append(layer_output[self.n_full_conn_layers-1])
-        
+
         return tot_layer_output
-        
+
     def print_config(self):
         print('\nYOUR CONVOLUTIONAL NETWORK')
         print('-'*100)

@@ -1,6 +1,7 @@
 from math import sqrt
 from copy import deepcopy
-from matplotlib.pyplot import prism
+from os import PRIO_USER
+import matplotlib.pyplot as plt
 import numpy as np
 import functions as fun
 
@@ -44,6 +45,8 @@ class ConvolutionalNet:
 
             dim_kernels_per_layer = self.n_kernels_per_layer[i]
             n_nodes_conv_layer = self.get_n_nodes_feature_volume_pre_pooling(i)
+
+            print(n_nodes_conv_layer)
             self.conv_bias.append(np.random.uniform(size=(n_nodes_conv_layer, 1)))
 
     def __initialize_weights_and_full_conn_bias(self):
@@ -61,7 +64,7 @@ class ConvolutionalNet:
 
     def get_n_nodes_feature_volume(self, n_conv_layer):
         W = self.MNIST_IMAGE_SIZE
-        F = self.KERNEL_SIZE
+        F = self.KERNEL_SIZE # finestra di convoluzione (dim kernel) uguale a finestra di pooling
         P = self.PADDING
         S = self.STRIDE
 
@@ -167,7 +170,7 @@ class ConvolutionalNet:
                     region = feature_volume[:, row_start:row_finish, column_start:column_finish]
 
                     region = np.multiply(region, kernel)
-                    node = np.sum(region) + bias[b_index]
+                    node = np.sum(region) + bias[b_index][0]
                     b_index += 1
 
                     feature_map_row.append(node)
@@ -192,11 +195,11 @@ class ConvolutionalNet:
         feature_map_row = list()
 
         for d in range(depth):
-            for i in range(0, n_rows, stride):
+            for i in range(0, n_rows - 1, stride):
                 row_start = i
                 row_finish = row_start + stride
 
-                for j in range(0, n_columns, stride):
+                for j in range(0, n_columns - 1, stride):
                     column_start = j
                     column_finish = column_start + stride
 
@@ -218,16 +221,11 @@ class ConvolutionalNet:
         conv_inputs = list()
 
         for i in range(self.n_conv_layers) :
-            print(x.shape)
-            print(self.kernels[i].shape)
-            print(self.conv_bias[i].shape)
             if i == 0 :
                 conv_x = self.__convolution(x, self.kernels[i], self.conv_bias[i])
             else :
                 conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i], self.conv_bias[i])
             
-            print(conv_x.shape)
-
             conv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
             output = act_fun(conv_x)
@@ -236,7 +234,6 @@ class ConvolutionalNet:
             # caso è la funzione identità quindi non viene considerata
             pooled_x = self.__max_pooling(output, self.KERNEL_SIZE)
             
-            print(pooled_x.shape)
             feature_volumes.append(pooled_x)
 
         return conv_inputs, feature_volumes
@@ -277,7 +274,7 @@ class ConvolutionalNet:
 
             input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
             input_for_full_conn = input_for_full_conn.reshape(-1, 1)
-
+            
             layer_input, layer_output = self.__full_conn_forward_step(input_for_full_conn)
 
             tot_conv_inputs.append(conv_inputs)
@@ -299,7 +296,6 @@ class ConvolutionalNet:
             _, feature_volumes = self.__convolutional_forward_step(new_X[i])         #conv_inputs probabilmente non serve
 
             input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
-
             input_for_full_conn = input_for_full_conn.reshape(-1, 1)
 
             _, layer_output = self.__full_conn_forward_step(input_for_full_conn)

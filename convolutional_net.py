@@ -1,5 +1,6 @@
 from math import sqrt
 from copy import deepcopy
+from matplotlib.pyplot import prism
 import numpy as np
 import functions as fun
 
@@ -152,8 +153,8 @@ class ConvolutionalNet:
 
         for k in range(n_kernels):
             kernel = kernels[k]
-            k_rows = kernels.shape[1]
-            k_columns = kernels.shape[2]
+            k_rows = kernel.shape[1]
+            k_columns = kernel.shape[2]
 
             for i in range(1, n_rows - 1, self.STRIDE):
                 row_start = i - 1
@@ -217,10 +218,15 @@ class ConvolutionalNet:
         conv_inputs = list()
 
         for i in range(self.n_conv_layers) :
+            print(x.shape)
+            print(self.kernels[i].shape)
+            print(self.conv_bias[i].shape)
             if i == 0 :
                 conv_x = self.__convolution(x, self.kernels[i], self.conv_bias[i])
             else :
                 conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i], self.conv_bias[i])
+            
+            print(conv_x.shape)
 
             conv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
@@ -229,7 +235,8 @@ class ConvolutionalNet:
             # teoricamente bisognerebbe applicare la funzione di attivazione che in questo
             # caso è la funzione identità quindi non viene considerata
             pooled_x = self.__max_pooling(output, self.KERNEL_SIZE)
-
+            
+            print(pooled_x.shape)
             feature_volumes.append(pooled_x)
 
         return conv_inputs, feature_volumes
@@ -292,6 +299,7 @@ class ConvolutionalNet:
             _, feature_volumes = self.__convolutional_forward_step(new_X[i])         #conv_inputs probabilmente non serve
 
             input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
+
             input_for_full_conn = input_for_full_conn.reshape(-1, 1)
 
             _, layer_output = self.__full_conn_forward_step(input_for_full_conn)

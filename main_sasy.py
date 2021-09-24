@@ -1,3 +1,4 @@
+from numpy.core.defchararray import _partition_dispatcher
 from functions import cross_entropy
 from learning import back_propagation
 from learning import conv_batch_learning

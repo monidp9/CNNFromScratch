@@ -247,6 +247,11 @@ def __get_conv_weights_bias_deriv(net, conv_delta, conv_input, conv_output):
             for k in range(n_kernels):
                 for r in range(n_rows):
                     for c in range(n_columns):
+                        mask = np.zeros((n_rows, n_columns))
+                        mask[r, c] = 1
+
+                        x_values = list()
+                        for i in range()
 
 
 

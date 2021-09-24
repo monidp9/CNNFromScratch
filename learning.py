@@ -288,9 +288,8 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
 
             else:
                 for i in range(net.n_conv_layers):
-                    total_kernels_deriv[i] = np.add(total_kernels_deriv[i], kernels_deriv[i])
+                    total_kernels_deriv[i] = np.add(total_kernels_deriv[i], kernels_deriv[i]) 
                     total_conv_bias_deriv[i] = np.add(total_conv_bias_deriv[i], conv_bias_deriv[i]) 
-
 
                 for i in range(net.n_full_conn_layers) :
                     total_weights_deriv[i] = np.add(total_weights_deriv[i], weights_deriv[i])

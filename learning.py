@@ -129,8 +129,12 @@ class struct_per_RPROP:
  
     def __initialize_delta(self, net) :
         for i in range(net.n_conv_layers) :
-            self.kernels_delta.append(np.random.uniform(size=(net.n_kernels_per_layer[i],
-                                                        net.KERNEL_SIZE, net.KERNEL_SIZE)))                
+            dim_kernels_per_layer = 1 # primo kernel applicato su input ha dimensione 1
+
+            self.kernels_delta.append(np.random.uniform(size=(net.n_kernels_per_layer[i], dim_kernels_per_layer,
+                                                                net.KERNEL_SIZE, net.KERNEL_SIZE)))                
+
+            dim_kernels_per_layer = self.n_kernels_per_layer[i]
 
             n_conv_bias_per_layer = net.get_n_nodes_feature_volume_pre_pooling(i)
             self.conv_bias_delta.append(np.random.uniform(size=(n_conv_bias_per_layer,1)))     
@@ -164,17 +168,18 @@ def __convolutional_RPROP(net, struct, eta_n, eta_p, epoch):
         layer_kernels = net.kernels[l]
         layer_kernels_delta = struct.kernels_delta[l]
 
-        for k in range(net.n_kernels_per_layer[l]) :
-            for i in range(net.KERNEL_SIZE) :
-                for j in range(net.KERNEL_SIZE) :
+        for h in range(net.n_kernels_per_layer[l]) :        # h indice che scorre sui vari kernel del layer
+            for k in range(net.KERNEL_SIZE) :
+                for i in range(net.KERNEL_SIZE) :
+                    for j in range(net.KERNEL_SIZE) :
 
-                    if layer_kernels_deriv_prev_epoch[k,i,j] * layer_kernels_deriv[k,i,j] > 0 :
-                        layer_kernels_delta[k,i,j] = min(DELTA_MAX, eta_p * layer_kernels_delta[k,i,j])
+                        if layer_kernels_deriv_prev_epoch[h,k,i,j] * layer_kernels_deriv[h,k,i,j] > 0 :
+                            layer_kernels_delta[h,k,i,j] = min(DELTA_MAX, eta_p * layer_kernels_delta[h,k,i,j])
 
-                    if layer_kernels_deriv_prev_epoch[k,i,j] * layer_kernels_deriv[k,i,j] < 0 :
-                        layer_kernels_delta[k,i,j] = max(DELTA_MIN, eta_n * layer_kernels_delta[k,i,j])
+                        if layer_kernels_deriv_prev_epoch[h,k,i,j] * layer_kernels_deriv[h,k,i,j] < 0 :
+                            layer_kernels_delta[h,k,i,j] = max(DELTA_MIN, eta_n * layer_kernels_delta[h,k,i,j])
 
-                    layer_kernels[k,i,j] = layer_kernels[k,i,j] - np.sign(layer_kernels_deriv[k,i,j]) * layer_kernels_delta[k,i,j]
+                        layer_kernels[h,k,i,j] = layer_kernels[h,k,i,j] - np.sign(layer_kernels_deriv[h,k,i,j]) * layer_kernels_delta[h,k,i,j]
 
         layer_conv_bias_deriv_prev_epoch = conv_bias_deriv_prev_epoch[l]
         layer_conv_bias_deriv = struct.conv_bias_deriv[l]
@@ -453,14 +458,16 @@ def __get_fc_weights_bias_deriv(net, x, delta, layer_output):
     return weights_deriv, bias_deriv
 
 def __get_conv_weights_bias_deriv(net, conv_delta, conv_input, conv_output):
+    '''
     kernels_deriv = list()
     bias_deriv = list()
 
     for l in range(net.n_conv_layers):
+
         if l == 0:
             pass
         else:
-            pooling_fv = conv_input[l]ì
+            pooling_fv = conv_input[l]
             pred_conv_fv = conv_output[l - 1]
             padded_pred_conv_fv = net.__padding(pred_conv_fv)
 
@@ -478,14 +485,9 @@ def __get_conv_weights_bias_deriv(net, conv_delta, conv_input, conv_output):
 
                         x_values = list()
                         for i in range()
-
-
-
-
-
-
-
-    return weights_deriv, bias_deriv
+        return weights_deriv, bias_deriv
+    '''
+    pass
 
 def back_propagation_conv(net, x, t):
     # x: singola istanza

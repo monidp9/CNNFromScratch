@@ -1,4 +1,5 @@
 from math import sqrt
+from copy import deepcopy
 import numpy as np
 import functions as fun
 
@@ -33,10 +34,10 @@ class ConvolutionalNet:
         self.__initialize_kernels_and_conv_bias()
 
     def __initialize_kernels_and_conv_bias(self):
-        
+
         dim_kernels_per_layer = 1 # primo kernel applicato su input ha dimensione 1
 
-        for i in range(self.n_conv_layers): 
+        for i in range(self.n_conv_layers):
             self.kernels.append(np.random.uniform(size=(self.n_kernels_per_layer[i], dim_kernels_per_layer,
                                                         self.KERNEL_SIZE, self.KERNEL_SIZE)))
 
@@ -170,10 +171,10 @@ class ConvolutionalNet:
 
                     feature_map_row.append(node)
 
-                feature_map.append(feature_map_row)
+                feature_map.append(deepcopy(feature_map_row))
                 feature_map_row[:] = []
 
-            conv_feature_volume.append(feature_map)
+            conv_feature_volume.append(deepcopy(feature_map))
             feature_map[:] = []
 
         return np.array(conv_feature_volume)

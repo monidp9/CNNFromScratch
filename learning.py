@@ -261,7 +261,6 @@ def __get_conv_weights_bias_deriv(net, conv_delta, conv_input, conv_output):
 
     return weights_deriv, bias_deriv
 
-
 def back_propagation_conv(net, x, t):
     # x: singola istanza
     conv_input, conv_output, fc_input, fc_output = net.forward_step(x)

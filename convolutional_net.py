@@ -188,28 +188,28 @@ class ConvolutionalNet:
         stride = region_size
 
         pooled_feature_volume = list()
-        feature_temp = list()
-        row_temp = list()
+        feature_map = list()
+        feature_map_row = list()
 
         for d in range(depth):
-            for i in range(1, n_rows - 1, stride):
-                for j in range(1, n_columns - 1, stride):
-                    row_start = i - 1
-                    column_start = j - 1
+            for i in range(0, n_rows, stride):
+                row_start = i
+                row_finish = row_start + stride
 
-                    row_finish = row_start + stride
+                for j in range(0, n_columns, stride):
+                    column_start = j
                     column_finish = column_start + stride
 
                     region = feature_volume[d, row_start:row_finish, column_start:column_finish]
                     max = np.max(region)
 
-                    row_temp.append(max)
+                    feature_map_row.append(max)
 
-                feature_temp.append(row_temp.copy())
-                row_temp[:] = []
+                feature_map.append(deepcopy(feature_map_row))
+                feature_map_row[:] = []
 
-            pooled_feature_volume.append(feature_temp.copy())
-            feature_temp[:] = []
+            pooled_feature_volume.append(feature_map.copy())
+            feature_map[:] = []
 
         return np.array(pooled_feature_volume)
 

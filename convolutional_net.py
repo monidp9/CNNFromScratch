@@ -26,17 +26,21 @@ class ConvolutionalNet:
 
         self.weights = list()
         self.full_conn_bias = list()
-        self.kernels = list()
+        self.kernels = list()           # lista di kernels quadrimensionali
         self.conv_bias = list()
 
         self.__initialize_weights_and_full_conn_bias()
         self.__initialize_kernels_and_conv_bias()
 
     def __initialize_kernels_and_conv_bias(self):
-        for i in range(self.n_conv_layers):
-            self.kernels.append(np.random.uniform(size=(self.n_kernels_per_layer[i],
+        
+        dim_kernels_per_layer = 1 # primo kernel applicato su input ha dimensione 1
+
+        for i in range(self.n_conv_layers): 
+            self.kernels.append(np.random.uniform(size=(self.n_kernels_per_layer[i], dim_kernels_per_layer,
                                                         self.KERNEL_SIZE, self.KERNEL_SIZE)))
 
+            dim_kernels_per_layer = self.n_kernels_per_layer[i]
             n_nodes_conv_layer = self.get_n_nodes_feature_volume_pre_pooling(i)
             self.conv_bias.append(np.random.uniform(size=(n_nodes_conv_layer, 1)))
 

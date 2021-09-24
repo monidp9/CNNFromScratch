@@ -18,7 +18,7 @@ X = utility.get_mnist_data(X)
 t = utility.get_mnist_labels(t)
 
 
-net = ConvolutionalNet(n_conv_layers = 2, n_kernels_per_layer = [2,3,4],
+net = ConvolutionalNet(n_conv_layers = 5, n_kernels_per_layer = [2,2,2,2,2],
                        n_hidden_nodes = 5, act_fun_codes = [1,1], error_fun_code = 1)
 
 net.print_config()

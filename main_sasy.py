@@ -1,3 +1,4 @@
+from numpy.core.defchararray import _partition_dispatcher
 from functions import cross_entropy
 from learning import back_propagation
 from learning import conv_batch_learning
@@ -18,8 +19,8 @@ X = utility.get_mnist_data(X)
 t = utility.get_mnist_labels(t)
 
 
-net = ConvolutionalNet(n_conv_layers = 5, n_kernels_per_layer = [2,2,2,2,2],
-                       n_hidden_nodes = 5, act_fun_codes = [1,1], error_fun_code = 1)
+net = ConvolutionalNet(n_conv_layers = 2, n_kernels_per_layer = [2,2], # vincolare il numero max di layer convolutivi
+                       n_hidden_nodes = 5, act_fun_codes = [2,2], error_fun_code = 1)
 
 net.print_config()
 

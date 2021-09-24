@@ -1,3 +1,4 @@
+from matplotlib.pyplot import prism
 import net
 import functions as fun
 import numpy as np
@@ -128,13 +129,13 @@ class struct_per_RPROP:
         self.__initialize_delta(net)
 
     def __initialize_delta(self, net) :
+        
+        dim_kernels_per_layer = 1 # primo kernel applicato su input ha dimensione 1
         for i in range(net.n_conv_layers) :
-            dim_kernels_per_layer = 1 # primo kernel applicato su input ha dimensione 1
-
             self.kernels_delta.append(np.random.uniform(size=(net.n_kernels_per_layer[i], dim_kernels_per_layer,
                                                                 net.KERNEL_SIZE, net.KERNEL_SIZE)))
 
-            dim_kernels_per_layer = self.n_kernels_per_layer[i]
+            dim_kernels_per_layer = net.n_kernels_per_layer[i]
 
             n_conv_bias_per_layer = net.get_n_nodes_feature_volume_pre_pooling(i)
             self.conv_bias_delta.append(np.random.uniform(size=(n_conv_bias_per_layer,1)))
@@ -168,18 +169,20 @@ def __convolutional_RPROP(net, struct, eta_n, eta_p, epoch):
         layer_kernels = net.kernels[l]
         layer_kernels_delta = struct.kernels_delta[l]
 
-        for h in range(net.n_kernels_per_layer[l]) :        # h indice che scorre sui vari kernel del layer
-            for k in range(net.KERNEL_SIZE) :
+        for k in range(net.n_kernels_per_layer[l]) :        # h indice che scorre sui vari kernel del layer
+            kernels_z_axis_size = layer_kernels_deriv_prev_epoch[k].shape[0]
+            
+            for z in range(kernels_z_axis_size) :
                 for i in range(net.KERNEL_SIZE) :
                     for j in range(net.KERNEL_SIZE) :
 
-                        if layer_kernels_deriv_prev_epoch[h,k,i,j] * layer_kernels_deriv[h,k,i,j] > 0 :
-                            layer_kernels_delta[h,k,i,j] = min(DELTA_MAX, eta_p * layer_kernels_delta[h,k,i,j])
+                        if layer_kernels_deriv_prev_epoch[k,z,i,j] * layer_kernels_deriv[k,z,i,j] > 0 :         # problema delta
+                            layer_kernels_delta[k,z,i,j] = min(DELTA_MAX, eta_p * layer_kernels_delta[k,z,i,j])
 
-                        if layer_kernels_deriv_prev_epoch[h,k,i,j] * layer_kernels_deriv[h,k,i,j] < 0 :
-                            layer_kernels_delta[h,k,i,j] = max(DELTA_MIN, eta_n * layer_kernels_delta[h,k,i,j])
+                        if layer_kernels_deriv_prev_epoch[k,z,i,j] * layer_kernels_deriv[k,z,i,j] < 0 :
+                            layer_kernels_delta[k,z,i,j] = max(DELTA_MIN, eta_n * layer_kernels_delta[k,z,i,j])
 
-                        layer_kernels[h,k,i,j] = layer_kernels[h,k,i,j] - np.sign(layer_kernels_deriv[h,k,i,j]) * layer_kernels_delta[h,k,i,j]
+                        layer_kernels[k,z,i,j] = layer_kernels[k,z,i,j] - np.sign(layer_kernels_deriv[k,z,i,j]) * layer_kernels_delta[k,z,i,j]
 
         layer_conv_bias_deriv_prev_epoch = conv_bias_deriv_prev_epoch[l]
         layer_conv_bias_deriv = struct.conv_bias_deriv[l]
@@ -240,7 +243,6 @@ def RPROP (net, str_rprop, eta_n, eta_p, epoch):   # serve restituire la rete in
 
     if epoch==0:
         net = conv_standard_gradient_descent(net, str_rprop, eta_n)
-        net = conv_standard_gradient_descent(net, str_rprop, eta_p)
     else :
         net = __convolutional_RPROP(net, str_rprop, eta_n, eta_p, epoch)
         net = __full_conn_RPROP(net, str_rprop, eta_n, eta_p, epoch)
@@ -253,9 +255,9 @@ def RPROP (net, str_rprop, eta_n, eta_p, epoch):   # serve restituire la rete in
     return net
 
 def conv_batch_learning(net, X_train, t_train, X_val, t_val):
-    eta_min = 0.001
+    eta_min = 0.1
     eta_max = 3
-    n_epochs = 300
+    n_epochs = 100
 
     train_errors = list()
     val_errors = list()
@@ -334,6 +336,7 @@ def conv_standard_gradient_descent(net, str_rprop, eta):
     for i in range(net.n_full_conn_layers):
         net.weights[i] = net.weights[i] - (eta * str_rprop.weights_deriv[i])
         net.full_conn_bias[i] = net.full_conn_bias[i] - (eta * str_rprop.full_conn_bias_deriv[i])
+    
     return net
 
 # ----------------------------------- monty

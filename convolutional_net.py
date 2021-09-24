@@ -1,5 +1,7 @@
 from math import sqrt
 from copy import deepcopy
+from os import PRIO_USER
+import matplotlib.pyplot as plt
 import numpy as np
 import functions as fun
 
@@ -42,6 +44,8 @@ class ConvolutionalNet:
 
             dim_kernels_per_layer = self.n_kernels_per_layer[i]
             n_nodes_conv_layer = self.get_n_nodes_feature_volume_pre_pooling(i)
+
+            print(n_nodes_conv_layer)
             self.conv_bias.append(np.random.uniform(size=(n_nodes_conv_layer, 1)))
 
     def __initialize_weights_and_full_conn_bias(self):
@@ -59,7 +63,7 @@ class ConvolutionalNet:
 
     def get_n_nodes_feature_volume(self, n_conv_layer):
         W = self.MNIST_IMAGE_SIZE
-        F = self.KERNEL_SIZE
+        F = self.KERNEL_SIZE # finestra di convoluzione (dim kernel) uguale a finestra di pooling
         P = self.PADDING
         S = self.STRIDE
 
@@ -221,7 +225,6 @@ class ConvolutionalNet:
             else :
                 conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i], self.conv_bias[i])
 
-            print(conv_x.shape)
             conv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
             output = act_fun(conv_x)

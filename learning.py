@@ -384,8 +384,8 @@ def __get_conv_delta(net, conv_input, conv_output, flattened_delta):
 
     # calcolo dei delta
     for l in range(net.n_conv_layers - 1, -1, -1):
-        conv_feature_volume = conv_output[l]
         pooling_feature_volume = conv_input[l]
+        conv_feature_volume = conv_output[l]
 
         last_layer = (i == net.n_conv_layers - 1)
 
@@ -396,8 +396,6 @@ def __get_conv_delta(net, conv_input, conv_output, flattened_delta):
                                  conv_feature_volume.shape[2]))
 
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
-
-            succ_conv_feature_volume = conv_input[l + 1]
             succ_pooling_delta = pooling_delta[l + 1]
 
             layer_delta = conv_delta[l]
@@ -409,12 +407,10 @@ def __get_conv_delta(net, conv_input, conv_output, flattened_delta):
 
                         node_delta = act_fun(node)
                         temp_sum = 0
-                        for k in range(succ_conv_feature_volume.shape[0]):
+                        for k in range(succ_pooling_delta.shape[0]):
                             delta = succ_pooling_delta[k, i, j]
-
-                            kernel = layer_kernels[k, :, :]
-                            weight = kernel[1, 1]
-
+                            # prende il peso centrale del kernel map
+                            weight = layer_kernels[k, d, 1, 1]
                             temp_sum += delta * weight
 
                         node_delta = node_delta * temp_sum
@@ -457,37 +453,74 @@ def __get_fc_weights_bias_deriv(net, x, delta, layer_output):
 
     return weights_deriv, bias_deriv
 
-def __get_conv_weights_bias_deriv(net, conv_delta, conv_input, conv_output):
-    '''
+def __get_conv_weights_bias_deriv(net, conv_delta, conv_output):
     kernels_deriv = list()
     bias_deriv = list()
 
-    for l in range(net.n_conv_layers):
+    delta_values = list()
+    x_values = list()
 
+    for l in range(net.n_conv_layers):
         if l == 0:
             pass
+
         else:
-            pooling_fv = conv_input[l]
+            pooling_delta = conv_delta[l]
             pred_conv_fv = conv_output[l - 1]
             padded_pred_conv_fv = net.__padding(pred_conv_fv)
 
-            layer_kernels = net.kernels[l]
-            n_kernels, n_rows, n_columns = layer_kernels.shape[0], \
-                                           layer_kernels.shape[1], \
-                                           layer_kernels.shape[2]
+            layer_kernels = net.kernels[l - 1]
 
-            kernel_deriv = np.zeros((n_rows, n_columns))
+            n_rows = pooling_delta.shape[1]
+            n_columns = pooling_delta.shape[2]
+            n_kernels = layer_kernels.shape[0]
+
+            # calcolo derivate dei bias
+            fv_bias_deriv = pooling_delta
+            bias_deriv.append(deepcopy(fv_bias_deriv))
+
+            # calcolo derivate dei kernel
             for k in range(n_kernels):
-                for r in range(n_rows):
-                    for c in range(n_columns):
-                        mask = np.zeros((n_rows, n_columns))
-                        mask[r, c] = 1
+                kernel = layer_kernels[k, :, :, :]
 
-                        x_values = list()
-                        for i in range()
-        return weights_deriv, bias_deriv
-    '''
-    pass
+                k_depth = kernel.shape[0]
+                k_rows = kernel.shape[1]
+                k_columns = kernel.shape[2]
+
+                kernels_deriv = np.zeros((n_kernels, k_depth, k_rows, k_columns))
+                for d in range(k_depth):
+                    for r in range(k_rows):
+                        for c in range(k_columns):
+                            n_rows = padded_pred_conv_fv.shape[1]
+                            n_columns = padded_pred_conv_fv.shape[2]
+                            for i in range(0, n_rows - 1, self.STRIDE):
+                                row_start = i
+                                row_finish = row_start + k_rows
+                                for j in range(0, n_columns - 1, self.STRIDE):
+                                    column_start = j
+                                    column_finish = column_start + k_columns
+
+                                    region = padded_pred_conv_fv[d, row_start:row_finish, column_start:column_finish]
+                                    x = region[r, c]
+                                    x_values.append(x)
+
+                            for i in range(0, n_rows, self.STRIDE):
+                                for j in range(0, n_columns, self.STRIDE):
+                                    delta = pooling_delta[k, i, j]
+                                    delta_values.append(delta)
+
+                            deriv = delta_values * x_values
+                            kernels_deriv[k, d, r, c] = np.sum(deriv)
+
+                            delta_values[:] = []
+                            x_values[:] = []
+
+                kernels_deriv.append(deepcopy(kernel_deriv))
+
+
+
+    return weights_deriv, bias_deriv
+
 
 def back_propagation_conv(net, x, t):
     # x: singola istanza
@@ -501,6 +534,6 @@ def back_propagation_conv(net, x, t):
     flattened_layer = conv_output[net.n_conv_layers - 1].flatten()
 
     fc_weights_deriv, fc_bias_deriv =  __get_fc_weights_bias_deriv(net, flattened_layer, fc_delta, fc_output)
-    conv_kernel_deriv, conv_bias_deriv = __get_conv_weights_bias_deriv(net, conv_delta, conv_input, conv_output)
+    conv_kernel_deriv, conv_bias_deriv = __get_conv_weights_bias_deriv(net, conv_delta, conv_output)
 
     return fc_weights_deriv, fc_bias_deriv, conv_kernel_deriv, conv_bias_deriv

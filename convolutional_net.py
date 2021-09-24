@@ -34,7 +34,6 @@ class ConvolutionalNet:
         self.__initialize_kernels_and_conv_bias()
 
     def __initialize_kernels_and_conv_bias(self):
-
         dim_kernels_per_layer = 1 # primo kernel applicato su input ha dimensione 1
 
         for i in range(self.n_conv_layers):
@@ -166,7 +165,7 @@ class ConvolutionalNet:
                     region = feature_volume[:, row_start:row_finish, column_start:column_finish]
 
                     region = np.multiply(region, kernel)
-                    node = np.sum(region) + bias[b_index]
+                    node = np.sum(region) + bias[b_index][0]
                     b_index += 1
 
                     feature_map_row.append(node)
@@ -191,11 +190,11 @@ class ConvolutionalNet:
         feature_map_row = list()
 
         for d in range(depth):
-            for i in range(0, n_rows, stride):
+            for i in range(0, n_rows - 1, stride):
                 row_start = i
                 row_finish = row_start + stride
 
-                for j in range(0, n_columns, stride):
+                for j in range(0, n_columns - 1, stride):
                     column_start = j
                     column_finish = column_start + stride
 
@@ -222,6 +221,7 @@ class ConvolutionalNet:
             else :
                 conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i], self.conv_bias[i])
 
+            print(conv_x.shape)
             conv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
             output = act_fun(conv_x)

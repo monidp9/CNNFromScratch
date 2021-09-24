@@ -44,6 +44,7 @@ def padding(feature_volume):
     return padded_feature_volume
 
 def convolution(feature_volume, kernels, stride=1):
+    # kernels quadrimensionale del layer
     feature_volume = padding(feature_volume)
 
     if feature_volume.ndim < 3:
@@ -52,14 +53,14 @@ def convolution(feature_volume, kernels, stride=1):
     n_rows = feature_volume.shape[1]
     n_columns = feature_volume.shape[2]
 
-    bias = np.random.uniform(size=(n_rows**2 * 2))
-
     # convolution
     b_index = 0
     n_kernels = kernels.shape[0]
     feature_map = list()
     feature_map_row = list()
     conv_feature_volume = list()
+
+    bias = np.random.uniform(size=((n_rows - 2)**2 * n_kernels, 1))
 
     for k in range(n_kernels):
         kernel = kernels[k]
@@ -77,7 +78,7 @@ def convolution(feature_volume, kernels, stride=1):
                 region = feature_volume[:, row_start:row_finish, column_start:column_finish]
 
                 region = np.multiply(region, kernel)
-                node = np.sum(region) + bias[b_index]
+                node = np.sum(region) + bias[b_index][0]
                 b_index += 1
 
                 feature_map_row.append(node)
@@ -98,27 +99,28 @@ def max_pooling(feature_volume, region_size):
     stride = region_size
 
     pooled_feature_volume = list()
-    feature_temp = list()
-    corow_temp = list()
+    feature_map = list()
+    feature_map_row = list()
 
     for d in range(depth):
-        for i in range(1, n_rows - 1, stride):
-            row_start = i - 1
+        for i in range(0, n_rows - 1, stride):
+            row_start = i
             row_finish = row_start + stride
 
-            for j in range(1, n_columns - 1, stride):
-                column_start = j - 1
+            for j in range(0, n_columns - 1, stride):
+                column_start = j
                 column_finish = column_start + stride
 
                 region = feature_volume[d, row_start:row_finish, column_start:column_finish]
                 max = np.max(region)
-                row_temp.append(max)
 
-            feature_temp.append(row_temp.copy())
-            row_temp[:] = []
+                feature_map_row.append(max)
 
-        pooled_feature_volume.append(feature_temp.copy())
-        feature_temp[:] = []
+            feature_map.append(deepcopy(feature_map_row))
+            feature_map_row[:] = []
+
+        pooled_feature_volume.append(feature_map.copy())
+        feature_map[:] = []
 
     return np.array(pooled_feature_volume)
 
@@ -134,14 +136,18 @@ x2 = X[:, 1:2].reshape(28, 28)
 
 feature_volume = list()
 feature_volume.append(x1)
-feature_volume.append(x2)
 feature_volume = np.array(feature_volume)
 
-kernel = np.random.uniform(size=(1, 2, 3, 3))
+# CONVOLUZIONE
+kernel = np.random.uniform(size=(2, 1, 3, 3))
 
-print(feature_volume.shape)
-conv_feature_volume = convolution(feature_volume, kernel)
+print(x1.shape)
+conv_feature_volume = convolution(x1, kernel)
 print(conv_feature_volume.shape)
 
-plt.imshow(conv_feature_volume[0])
-plt.show()
+# POOLING
+# pooled_feature_volume = max_pooling(conv_feature_volume, 3)
+# print(pooled_feature_volume.shape)
+#
+# plt.imshow(pooled_feature_volume[0])
+# plt.show()

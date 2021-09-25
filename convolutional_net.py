@@ -101,7 +101,7 @@ class ConvolutionalNet:
 
         return n_nodes
 
-    def __padding(self, feature_volume):
+    def padding(self, feature_volume):
         remove_dim = False
         if feature_volume.ndim < 3:
             feature_volume = np.expand_dims(feature_volume, axis=0)
@@ -138,7 +138,7 @@ class ConvolutionalNet:
 
     def __convolution(self, feature_volume, kernels, bias):
         # kernels quadrimensionale del layer
-        feature_volume = self.__padding(feature_volume)
+        feature_volume = self.padding(feature_volume)
 
         if feature_volume.ndim < 3:
             feature_volume = np.expand_dims(feature_volume, axis=0)

@@ -257,11 +257,10 @@ class ConvolutionalNet:
         return layer_input, layer_output
 
     def forward_step(self, x):
-
         x = x.reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
         x = np.expand_dims(x, axis=0)
 
-        conv_inputs, feature_volumes = self.__convolutional_forward_step(x)       
+        conv_inputs, feature_volumes = self.__convolutional_forward_step(x)
 
         input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
         input_for_full_conn = input_for_full_conn.reshape(-1, 1)

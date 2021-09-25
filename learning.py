@@ -343,7 +343,13 @@ def conv_standard_gradient_descent(net, str_rprop, eta):
 
 def __get_fc_delta(net, t, fc_input, fc_output):
     delta = list()
-    for i in range(net.n_full_conn_layers + 1):
+    # DA CAMBIARE
+    fc_input = fc_input[0]
+    fc_output = fc_output[0]
+
+    n_nodes = net.get_n_nodes_feature_volume(net.n_conv_layers)
+    delta.append(np.zeros(n_nodes))
+    for i in range(net.n_full_conn_layers):
         delta.append(np.zeros(net.nodes_per_layer[i]))
 
     error_fun_deriv = fun.error_functions_deriv[net.error_fun_code]
@@ -368,6 +374,10 @@ def __get_conv_delta(net, conv_input, conv_output, flattened_delta):
     # conv_input: layer di pooling senza ReLU (pooling da fare)
     # conv_output: layer convolutivo (convoluzione da fare)
 
+    # DA CAMBIARE
+    conv_input = conv_input[0]
+    conv_output = conv_output[0]
+
     conv_delta = [0] * net.n_conv_layers
     pooling_delta = [0] * net.n_conv_layers
 
@@ -390,19 +400,22 @@ def __get_conv_delta(net, conv_input, conv_output, flattened_delta):
         pooling_feature_volume = conv_input[l]
         conv_feature_volume = conv_output[l]
 
-        last_layer = (i == net.n_conv_layers - 1)
+        last_layer = (l == net.n_conv_layers - 1)
 
         # calcolo dei delta del layer di convoluzione (DA RIFARE)
         if not last_layer:
-            delta[l] = np.zeros((conv_feature_volume.shape[0],
-                                 conv_feature_volume.shape[1],
-                                 conv_feature_volume.shape[2]))
+            conv_delta[l] = np.zeros((conv_feature_volume.shape[0],
+                                      conv_feature_volume.shape[1],
+                                      conv_feature_volume.shape[2]))
 
-            act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
+            act_fun = fun.activation_functions[net.CONV_ACT_FUN_CODE]
             succ_pooling_delta = pooling_delta[l + 1]
 
             layer_delta = conv_delta[l]
             layer_kernels = net.kernels[l]
+
+            print('feature volume', conv_feature_volume.shape, 'kernel ', layer_kernels.shape)
+
             for d in range(conv_feature_volume.shape[0]):
                 for i in range(conv_feature_volume.shape[1]):
                     for j in range(conv_feature_volume.shape[2]):

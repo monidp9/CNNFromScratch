@@ -136,6 +136,7 @@ class ConvolutionalNet:
 
         return padded_feature_volume
 
+    # creare il bias in forma matriciale e non come vettore colonna
     def __convolution(self, feature_volume, kernels, bias):
         # kernels quadrimensionale del layer
         feature_volume = self.padding(feature_volume)

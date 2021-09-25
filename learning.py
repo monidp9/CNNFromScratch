@@ -255,8 +255,8 @@ def RPROP (net, str_rprop, eta_n, eta_p, epoch):   # serve restituire la rete in
     return net
 
 def conv_batch_learning(net, X_train, t_train, X_val, t_val):
-    eta_min = 0.1
-    eta_max = 3
+    eta_min = 0.5
+    eta_max = 1.2
     n_epochs = 100
 
     train_errors = list()
@@ -323,9 +323,6 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
             best_net = deepcopy(net)
 
     return best_net
-
-def conv_back_propagation_2(net,x,t):
-    return net.weights, net.full_conn_bias, net.kernels, net.conv_bias
 
 def conv_standard_gradient_descent(net, str_rprop, eta):
 
@@ -405,7 +402,8 @@ def __get_conv_delta(net, conv_input, conv_output, flattened_delta):
             succ_pooling_delta = pooling_delta[l + 1]
 
             layer_delta = conv_delta[l]
-            layer_kernels = net.kernels[l]
+            # i kernel del layer sono quelli applicati e non quelli da applicare
+            layer_kernels = net.kernels[l + 1]
 
             for d in range(conv_feature_volume.shape[0]):
                 for i in range(conv_feature_volume.shape[1]):
@@ -451,16 +449,21 @@ def __get_fc_weights_bias_deriv(net, x, delta, layer_output):
     weights_deriv = list()
     bias_deriv = list()
 
+    # nei delta ci sono anche quelli del layer flattened, per questo si esclude
+    # la prima posizione con l + 1
     for l in range(net.n_full_conn_layers):
         if l == 0:
-            weights_deriv.append(np.dot(delta[l]), np.transpose(x))
+            weights_deriv.append(np.dot(delta[l + 1], np.transpose(x)))
         else:
-            weights_deriv.append(np.dot(delta[l]), layer_output[l-1])
-        bias_deriv.append(delta[l])
+            weights_deriv.append(np.dot(delta[l + 1], np.transpose(layer_output[l-1])))
+        bias_deriv.append(delta[l + 1])
 
     return weights_deriv, bias_deriv
 
 def __get_conv_weights_bias_deriv(net, x, conv_delta, conv_output):
+    x = x.reshape(net.MNIST_IMAGE_SIZE, net.MNIST_IMAGE_SIZE)
+    x = np.expand_dims(x, axis=0)
+
     kernels_deriv = list()
     bias_deriv = list()
 
@@ -469,23 +472,27 @@ def __get_conv_weights_bias_deriv(net, x, conv_delta, conv_output):
 
     for l in range(net.n_conv_layers):
         pooling_delta = conv_delta[l]
-        layer_kernels = net.kernels[l - 1]
+        layer_kernels = net.kernels[l]
 
         prev_conv_fv = x
-        padded_pred_conv_fv = net.padding(x)
         if l != 0:
             prev_conv_fv = conv_output[l - 1]
-            padded_prev_conv_fv = net.padding(pred_conv_fv)
 
-        n_kernels = layer_kernels.shape[0]
-        n_rows = pooling_delta.shape[1]
-        n_columns = pooling_delta.shape[2]
+        padded_prev_conv_fv = net.padding(prev_conv_fv)
 
         # calcolo derivate dei bias
         fv_bias_deriv = pooling_delta
         bias_deriv.append(fv_bias_deriv.copy())
 
         # calcolo derivate dei kernel
+        n_kernels = layer_kernels.shape[0]
+        kernel = layer_kernels[0, :, :, :]
+
+        k_depth = kernel.shape[0]
+        k_rows = kernel.shape[1]
+        k_columns = kernel.shape[2]
+
+        layer_kernels_deriv = np.zeros((n_kernels, k_depth, k_rows, k_columns))
         for k in range(n_kernels):
             kernel = layer_kernels[k, :, :, :]
 
@@ -493,17 +500,17 @@ def __get_conv_weights_bias_deriv(net, x, conv_delta, conv_output):
             k_rows = kernel.shape[1]
             k_columns = kernel.shape[2]
 
-            kernel_deriv = np.zeros((n_kernels, k_depth, k_rows, k_columns))
             for d in range(k_depth):
                 for r in range(k_rows):
                     for c in range(k_columns):
                         n_rows = padded_prev_conv_fv.shape[1]
                         n_columns = padded_prev_conv_fv.shape[2]
-                        for i in range(0, n_rows - 1, net.STRIDE):
-                            row_start = i
+
+                        for i in range(1, n_rows - 1, net.STRIDE):
+                            row_start = i - 1
                             row_finish = row_start + k_rows
-                            for j in range(0, n_columns - 1, net.STRIDE):
-                                column_start = j
+                            for j in range(1, n_columns - 1, net.STRIDE):
+                                column_start = j - 1
                                 column_finish = column_start + k_columns
 
                                 region = padded_prev_conv_fv[d, row_start:row_finish, column_start:column_finish]
@@ -517,15 +524,15 @@ def __get_conv_weights_bias_deriv(net, x, conv_delta, conv_output):
                                 delta = pooling_delta[k, i, j]
                                 delta_values.append(delta)
 
-                        deriv = delta_values * x_values
-                        kernel_deriv[k, d, r, c] = np.sum(deriv)
+                        deriv = np.multiply(delta_values, x_values)
+                        layer_kernels_deriv[k, d, r, c] = np.sum(deriv)
 
                         delta_values[:] = []
                         x_values[:] = []
 
-            kernels_deriv.append(kernel_deriv.copy())
+        kernels_deriv.append(layer_kernels_deriv.copy())
 
-    # le derivate sono liste aventi una matrice per ogni layer
+    # le derivate sono liste aventi una matrice quadrimensionale per ogni layer
     return kernels_deriv, bias_deriv
 
 def conv_back_propagation(net, x, t):
@@ -538,8 +545,13 @@ def conv_back_propagation(net, x, t):
     conv_delta = __get_conv_delta(net, conv_input, conv_output, fc_delta[0])
 
     flattened_layer = conv_output[net.n_conv_layers - 1].flatten()
+    flattened_layer = flattened_layer.reshape(-1, 1)
 
     fc_weights_deriv, fc_bias_deriv =  __get_fc_weights_bias_deriv(net, flattened_layer, fc_delta, fc_output)
     conv_kernel_deriv, conv_bias_deriv = __get_conv_weights_bias_deriv(net, x, conv_delta, conv_output)
+
+    for i in range(net.n_conv_layers):
+        conv_bias_deriv[i] = conv_bias_deriv[i].flatten()
+        conv_bias_deriv[i] = conv_bias_deriv[i].reshape(-1, 1)
 
     return fc_weights_deriv, fc_bias_deriv, conv_kernel_deriv, conv_bias_deriv

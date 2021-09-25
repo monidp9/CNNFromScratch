@@ -31,7 +31,7 @@ class Net:
 
             self.bias.append(np.random.uniform(size=(self.nodes_per_layer[i], 1)))
 
-    def forward_step(self, x):
+    def forward_step(self, x): 
         layer_input = list()
         layer_output = list()
 

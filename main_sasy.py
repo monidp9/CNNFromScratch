@@ -27,9 +27,4 @@ net.print_config()
 X,t = utility.get_random_dataset(X,t,20)
 X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.25)
 
-for i in range(net.n_conv_layers) : 
-    print(net.kernels[i].shape)
-
-# net = conv_batch_learning(net, X_train, t_train, X_test, t_test)
-
-
+net = conv_batch_learning(net, X_train, t_train, X_test, t_test)

@@ -36,7 +36,6 @@ class ConvolutionalNet:
         self.__initialize_kernels_and_conv_bias()
 
     def __initialize_kernels_and_conv_bias(self):
-
         dim_kernels_per_layer = 1 # primo kernel applicato su input ha dimensione 1
 
         for i in range(self.n_conv_layers):
@@ -102,7 +101,7 @@ class ConvolutionalNet:
 
         return n_nodes
 
-    def __padding(self, feature_volume):
+    def padding(self, feature_volume):
         remove_dim = False
         if feature_volume.ndim < 3:
             feature_volume = np.expand_dims(feature_volume, axis=0)
@@ -139,7 +138,7 @@ class ConvolutionalNet:
 
     def __convolution(self, feature_volume, kernels, bias):
         # kernels quadrimensionale del layer
-        feature_volume = self.__padding(feature_volume)
+        feature_volume = self.padding(feature_volume)
 
         if feature_volume.ndim < 3:
             feature_volume = np.expand_dims(feature_volume, axis=0)
@@ -225,7 +224,7 @@ class ConvolutionalNet:
                 conv_x = self.__convolution(x, self.kernels[i], self.conv_bias[i])
             else :
                 conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i], self.conv_bias[i])
-            
+
             conv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
             output = act_fun(conv_x)
@@ -233,7 +232,7 @@ class ConvolutionalNet:
             # teoricamente bisognerebbe applicare la funzione di attivazione che in questo
             # caso è la funzione identità quindi non viene considerata
             pooled_x = self.__max_pooling(output, self.KERNEL_SIZE)
-            
+
             feature_volumes.append(pooled_x)
 
         return conv_inputs, feature_volumes
@@ -259,7 +258,18 @@ class ConvolutionalNet:
 
     def forward_step(self, x):
 
+<<<<<<< HEAD
         conv_inputs, feature_volumes = self.__convolutional_forward_step(x)         #conv_inputs probabilmente non serve
+=======
+        for i in range(new_X.shape[0]) :
+
+            conv_inputs, feature_volumes = self.__convolutional_forward_step(new_X[i])         #conv_inputs probabilmente non serve
+
+            input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
+            input_for_full_conn = input_for_full_conn.reshape(-1, 1)
+
+            layer_input, layer_output = self.__full_conn_forward_step(input_for_full_conn)
+>>>>>>> e0a131987ca13eb915be23d604c75a5ebf4fc4df
 
         input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
         input_for_full_conn = input_for_full_conn.reshape(-1, 1)

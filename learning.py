@@ -343,9 +343,6 @@ def conv_standard_gradient_descent(net, str_rprop, eta):
 
 def __get_fc_delta(net, t, fc_input, fc_output):
     delta = list()
-    # DA CAMBIARE
-    fc_input = fc_input[0]
-    fc_output = fc_output[0]
 
     n_nodes = net.get_n_nodes_feature_volume(net.n_conv_layers)
     delta.append(np.zeros(n_nodes))
@@ -373,10 +370,6 @@ def __get_fc_delta(net, t, fc_input, fc_output):
 def __get_conv_delta(net, conv_input, conv_output, flattened_delta):
     # conv_input: layer di pooling senza ReLU (pooling da fare)
     # conv_output: layer convolutivo (convoluzione da fare)
-
-    # DA CAMBIARE
-    conv_input = conv_input[0]
-    conv_output = conv_output[0]
 
     conv_delta = [0] * net.n_conv_layers
     pooling_delta = [0] * net.n_conv_layers
@@ -413,8 +406,6 @@ def __get_conv_delta(net, conv_input, conv_output, flattened_delta):
 
             layer_delta = conv_delta[l]
             layer_kernels = net.kernels[l]
-
-            print('feature volume', conv_feature_volume.shape, 'kernel ', layer_kernels.shape)
 
             for d in range(conv_feature_volume.shape[0]):
                 for i in range(conv_feature_volume.shape[1]):

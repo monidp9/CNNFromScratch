@@ -499,10 +499,10 @@ def __get_conv_weights_bias_deriv(net, x, conv_delta, conv_output):
                     for c in range(k_columns):
                         n_rows = padded_prev_conv_fv.shape[1]
                         n_columns = padded_prev_conv_fv.shape[2]
-                        for i in range(0, n_rows - 1, self.STRIDE):
+                        for i in range(0, n_rows - 1, net.STRIDE):
                             row_start = i
                             row_finish = row_start + k_rows
-                            for j in range(0, n_columns - 1, self.STRIDE):
+                            for j in range(0, n_columns - 1, net.STRIDE):
                                 column_start = j
                                 column_finish = column_start + k_columns
 
@@ -512,8 +512,8 @@ def __get_conv_weights_bias_deriv(net, x, conv_delta, conv_output):
 
                         n_rows = pooling_delta.shape[1]
                         n_columns = pooling_delta.shape[2]
-                        for i in range(0, n_rows, self.STRIDE):
-                            for j in range(0, n_columns, self.STRIDE):
+                        for i in range(0, n_rows, net.STRIDE):
+                            for j in range(0, n_columns, net.STRIDE):
                                 delta = pooling_delta[k, i, j]
                                 delta_values.append(delta)
 

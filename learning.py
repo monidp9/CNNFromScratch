@@ -324,7 +324,7 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
 
     return best_net
 
-def conv_back_propagation(net,x,t):
+def conv_back_propagation_2(net,x,t):
     return net.weights, net.full_conn_bias, net.kernels, net.conv_bias
 
 def conv_standard_gradient_descent(net, str_rprop, eta):
@@ -467,16 +467,15 @@ def __get_conv_weights_bias_deriv(net, x, conv_delta, conv_output):
         pooling_delta = conv_delta[l]
         layer_kernels = net.kernels[l - 1]
 
-        pred_conv_fv = x
+        prev_conv_fv = x
         padded_pred_conv_fv = net.padding(x)
         if l != 0:
-            pred_conv_fv = conv_output[l - 1]
-            padded_pred_conv_fv = net.padding(pred_conv_fv)
+            prev_conv_fv = conv_output[l - 1]
+            padded_prev_conv_fv = net.padding(pred_conv_fv)
 
-
+        n_kernels = layer_kernels.shape[0]
         n_rows = pooling_delta.shape[1]
         n_columns = pooling_delta.shape[2]
-        n_kernels = layer_kernels.shape[0]
 
         # calcolo derivate dei bias
         fv_bias_deriv = pooling_delta
@@ -494,8 +493,8 @@ def __get_conv_weights_bias_deriv(net, x, conv_delta, conv_output):
             for d in range(k_depth):
                 for r in range(k_rows):
                     for c in range(k_columns):
-                        n_rows = padded_pred_conv_fv.shape[1]
-                        n_columns = padded_pred_conv_fv.shape[2]
+                        n_rows = padded_prev_conv_fv.shape[1]
+                        n_columns = padded_prev_conv_fv.shape[2]
                         for i in range(0, n_rows - 1, self.STRIDE):
                             row_start = i
                             row_finish = row_start + k_rows
@@ -503,7 +502,7 @@ def __get_conv_weights_bias_deriv(net, x, conv_delta, conv_output):
                                 column_start = j
                                 column_finish = column_start + k_columns
 
-                                region = padded_pred_conv_fv[d, row_start:row_finish, column_start:column_finish]
+                                region = padded_prev_conv_fv[d, row_start:row_finish, column_start:column_finish]
                                 x = region[r, c]
                                 x_values.append(x)
 
@@ -525,7 +524,7 @@ def __get_conv_weights_bias_deriv(net, x, conv_delta, conv_output):
     # le derivate sono liste aventi una matrice per ogni layer
     return kernels_deriv, bias_deriv
 
-def back_propagation_conv(net, x, t):
+def conv_back_propagation(net, x, t):
     # x: singola istanza
     conv_input, conv_output, fc_input, fc_output = net.forward_step(x)
 

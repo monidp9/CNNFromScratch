@@ -256,17 +256,11 @@ class ConvolutionalNet:
 
         return layer_input, layer_output
 
-    def forward_step(self, X):
-        new_X = np.empty(shape=(X.shape[1],self.MNIST_IMAGE_SIZE,self.MNIST_IMAGE_SIZE))
+    def forward_step(self, x):
 
-        tot_conv_inputs = list()
-        tot_feature_volumes = list()
-        tot_layer_input = list()
-        tot_layer_output = list()
-
-        for i in range(X.shape[1]):
-            new_X[i,:,:] = X[:,i].reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
-
+<<<<<<< HEAD
+        conv_inputs, feature_volumes = self.__convolutional_forward_step(x)         #conv_inputs probabilmente non serve
+=======
         for i in range(new_X.shape[0]) :
 
             conv_inputs, feature_volumes = self.__convolutional_forward_step(new_X[i])         #conv_inputs probabilmente non serve
@@ -275,13 +269,14 @@ class ConvolutionalNet:
             input_for_full_conn = input_for_full_conn.reshape(-1, 1)
 
             layer_input, layer_output = self.__full_conn_forward_step(input_for_full_conn)
+>>>>>>> e0a131987ca13eb915be23d604c75a5ebf4fc4df
 
-            tot_conv_inputs.append(conv_inputs)
-            tot_feature_volumes.append(feature_volumes)
-            tot_layer_input.append(layer_input)
-            tot_layer_output.append(layer_output)
+        input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
+        input_for_full_conn = input_for_full_conn.reshape(-1, 1)
+        
+        layer_input, layer_output = self.__full_conn_forward_step(input_for_full_conn)
 
-        return tot_conv_inputs, tot_feature_volumes, tot_layer_input, tot_layer_output
+        return conv_inputs, feature_volumes, layer_input, layer_output
 
     def sim(self, X):
         new_X = np.empty(shape=(X.shape[1],self.MNIST_IMAGE_SIZE,self.MNIST_IMAGE_SIZE))

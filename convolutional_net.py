@@ -1,14 +1,14 @@
 from math import sqrt
 from copy import deepcopy
-from os import PRIO_USER
 import matplotlib.pyplot as plt
 import numpy as np
 import functions as fun
+import utility
 
 class ConvolutionalNet:
     def __init__(self, n_conv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code):
         self.n_input_nodes = 784        # dipende dal dataset: 784
-        self.n_output_nodes = 10        # dipende dal dataset: 10
+        self.n_output_nodes = 10        # dipende dal dataset: 10
 
         self.n_conv_layers = n_conv_layers
         self.n_kernels_per_layer = n_kernels_per_layer.copy()
@@ -36,34 +36,37 @@ class ConvolutionalNet:
         self.__initialize_kernels_and_conv_bias()
 
     def __initialize_kernels_and_conv_bias(self):
-        dim_kernels_per_layer = 1 # primo kernel applicato su input ha dimensione 1
+        # il primo kernel applicato su input ha dimensione 1
+        dim_kernels_per_layer = 1 
+        mu, sigma = 0, 0.1
 
         for i in range(self.n_conv_layers):
-            self.kernels.append(np.random.uniform(size=(self.n_kernels_per_layer[i], dim_kernels_per_layer,
-                                                        self.KERNEL_SIZE, self.KERNEL_SIZE)))
+            self.kernels.append(np.random.normal(mu, sigma, size=(self.n_kernels_per_layer[i], dim_kernels_per_layer,
+                                                                  self.KERNEL_SIZE, self.KERNEL_SIZE)))
 
             dim_kernels_per_layer = self.n_kernels_per_layer[i]
             n_nodes_conv_layer = self.get_n_nodes_feature_volume_pre_pooling(i)
 
             print(n_nodes_conv_layer)
-            self.conv_bias.append(np.random.uniform(size=(n_nodes_conv_layer, 1)))
+            self.conv_bias.append(np.random.normal(mu, sigma, size=(n_nodes_conv_layer, 1)))
 
     def __initialize_weights_and_full_conn_bias(self):
+        mu, sigma = 0, 0.1
         for i in range(self.n_full_conn_layers):
             if i == 0:
                 n_nodes_input = self.get_n_nodes_feature_volume(self.n_conv_layers)
 
-                self.weights.append(np.random.uniform(size=(self.nodes_per_layer[i],
-                                                      n_nodes_input)))
+                self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i],
+                                                                      n_nodes_input)))
             else:
-                self.weights.append(np.random.uniform(size=(self.nodes_per_layer[i],
-                                                     self.nodes_per_layer[i-1])))
+                self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i],
+                                                                self.nodes_per_layer[i-1])))
 
-            self.full_conn_bias.append(np.random.uniform(size=(self.nodes_per_layer[i], 1)))
+            self.full_conn_bias.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i], 1)))
 
     def get_n_nodes_feature_volume(self, n_conv_layer):
         W = self.MNIST_IMAGE_SIZE
-        F = self.KERNEL_SIZE # finestra di convoluzione (dim kernel) uguale a finestra di pooling
+        F = self.KERNEL_SIZE
         P = self.PADDING
         S = self.STRIDE
 
@@ -102,6 +105,9 @@ class ConvolutionalNet:
         return n_nodes
 
     def padding(self, feature_volume):
+        # operazione di padding adatta solo all'applicazione
+        # di un filtro di dimensione 3x3
+
         remove_dim = False
         if feature_volume.ndim < 3:
             feature_volume = np.expand_dims(feature_volume, axis=0)
@@ -111,7 +117,6 @@ class ConvolutionalNet:
         rows = feature_volume.shape[1]
         columns = feature_volume.shape[2]
 
-        feature_map = None
         padded_feature_volume = list()
         for d in range(depth):
             feature_map = feature_volume[d, :, :]
@@ -137,10 +142,10 @@ class ConvolutionalNet:
         return padded_feature_volume
 
     # creare il bias in forma matriciale e non come vettore colonna
-    def __convolution(self, feature_volume, kernels, bias):
-        # kernels quadrimensionale del layer
-        feature_volume = self.padding(feature_volume)
+    def __convolution(self, feature_volume, layer_kernels, bias):
+        # layer_kernels: matrice quadrimensionale del layer
 
+        feature_volume = self.padding(feature_volume)
         if feature_volume.ndim < 3:
             feature_volume = np.expand_dims(feature_volume, axis=0)
 
@@ -149,13 +154,13 @@ class ConvolutionalNet:
 
         # convolution
         b_index = 0
-        n_kernels = kernels.shape[0]
+        n_kernels = layer_kernels.shape[0]
         feature_map = list()
         feature_map_row = list()
         conv_feature_volume = list()
 
         for k in range(n_kernels):
-            kernel = kernels[k]
+            kernel = layer_kernels[k]
             k_rows = kernel.shape[1]
             k_columns = kernel.shape[2]
 
@@ -204,9 +209,9 @@ class ConvolutionalNet:
                     column_finish = column_start + stride
 
                     region = feature_volume[d, row_start:row_finish, column_start:column_finish]
-                    max = np.max(region)
+                    max_node = np.max(region)
 
-                    feature_map_row.append(max)
+                    feature_map_row.append(max_node)
 
                 feature_map.append(deepcopy(feature_map_row))
                 feature_map_row[:] = []
@@ -216,17 +221,17 @@ class ConvolutionalNet:
 
         return np.array(pooled_feature_volume)
 
-    def __convolutional_forward_step(self, x):
-        feature_volumes = list()
-        conv_inputs = list()
+    def __cv_forward_step(self, x):
+        cv_outputs = list()
+        cv_inputs = list()
 
         for i in range(self.n_conv_layers) :
             if i == 0 :
                 conv_x = self.__convolution(x, self.kernels[i], self.conv_bias[i])
             else :
-                conv_x = self.__convolution(feature_volumes[i-1], self.kernels[i], self.conv_bias[i])
+                conv_x = self.__convolution(cv_outputs[i-1], self.kernels[i], self.conv_bias[i])
 
-            conv_inputs.append(conv_x)
+            cv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
             output = act_fun(conv_x)
 
@@ -234,65 +239,63 @@ class ConvolutionalNet:
             # caso è la funzione identità quindi non viene considerata
             pooled_x = self.__max_pooling(output, self.KERNEL_SIZE)
 
-            feature_volumes.append(pooled_x)
+            cv_outputs.append(pooled_x)
 
-        return conv_inputs, feature_volumes
+        return cv_inputs, cv_outputs
 
-    def __full_conn_forward_step(self, x) :
-        layer_input = list()
-        layer_output = list()
+    def __fc_forward_step(self, x) :
+        fc_layers_inputs = list()
+        fc_layers_outputs = list()
 
         for i in range(self.n_full_conn_layers):
             if i == 0:
                 # calcolo input dei nodi del primo strato nascosto
-                input = np.dot(self.weights[i], x) + self.full_conn_bias[i]
+                layer_input = np.dot(self.weights[i], x) + self.full_conn_bias[i]
             else:
                 # calcolo input dei nodi di uno strato nascosto generico
-                input = np.dot(self.weights[i], layer_output[i-1]) + self.full_conn_bias[i]
+                layer_input = np.dot(self.weights[i], fc_layers_outputs[i - 1]) + self.full_conn_bias[i]
 
-            layer_input.append(input)
+            fc_layers_inputs.append(layer_input)
+
             act_fun = fun.activation_functions[self.act_fun_codes_per_layer[i]]
-            output = act_fun(input)
-            layer_output.append(output)
+            output = act_fun(layer_input)
+            fc_layers_outputs.append(output)
 
-        return layer_input, layer_output
+        return fc_layers_inputs, fc_layers_outputs
 
     def forward_step(self, x):
-        x = x.reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
-        x = np.expand_dims(x, axis=0)
+        x = utility.convert_to_cnn_input(x, self.MNIST_IMAGE_SIZE)
 
-        conv_inputs, feature_volumes = self.__convolutional_forward_step(x)
+        cv_inputs, cv_outputs = self.__cv_forward_step(x)
 
-        input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
-        input_for_full_conn = input_for_full_conn.reshape(-1, 1)
+        input_for_fc = cv_outputs[self.n_conv_layers - 1].flatten()
+        input_for_fc = input_for_fc.reshape(-1, 1)
 
-        layer_input, layer_output = self.__full_conn_forward_step(input_for_full_conn)
+        fc_inputs, fc_outputs = self.__fc_forward_step(input_for_fc)
 
-        return conv_inputs, feature_volumes, layer_input, layer_output
+        return cv_inputs, cv_outputs, fc_inputs, fc_outputs
 
     def sim(self, X):
-        new_X = np.empty(shape=(X.shape[1],self.MNIST_IMAGE_SIZE,self.MNIST_IMAGE_SIZE))
-        tot_layer_output = list()
+        pred_values = list()
+        X = utility.convert_to_cnn_input(X, self.MNIST_IMAGE_SIZE)
 
-        for i in range(X.shape[1]):
-            new_X[i,:,:] = X[:,i].reshape(self.MNIST_IMAGE_SIZE, self.MNIST_IMAGE_SIZE)
+        n_instances = X.shape[0]
+        for i in range(n_instances) :
 
-        for i in range(new_X.shape[0]) :
+            _, cv_outputs = self.__cv_forward_step(X[i])
 
-            _, feature_volumes = self.__convolutional_forward_step(new_X[i])         #conv_inputs probabilmente non serve
+            input_for_fc = cv_outputs[self.n_conv_layers - 1].flatten()
+            input_for_fc = input_for_fc.reshape(-1, 1)
 
-            input_for_full_conn = feature_volumes[self.n_conv_layers-1].flatten()
-            input_for_full_conn = input_for_full_conn.reshape(-1, 1)
+            _, fc_outputs = self.__fc_forward_step(input_for_fc)
 
-            _, layer_output = self.__full_conn_forward_step(input_for_full_conn)
+            pred_values.append(fc_outputs[self.n_full_conn_layers - 1])
 
-            tot_layer_output.append(layer_output[self.n_full_conn_layers-1])
-
-        tot_layer_output = np.array(tot_layer_output)
-        tot_layer_output = tot_layer_output.squeeze()
-        tot_layer_output = tot_layer_output.transpose()
+        pred_values = np.array(pred_values)
+        pred_values = pred_values.squeeze()
+        pred_values = pred_values.transpose()
         
-        return tot_layer_output
+        return pred_values
 
     def print_config(self):
         print('\nYOUR CONVOLUTIONAL NETWORK')
@@ -302,7 +305,7 @@ class ConvolutionalNet:
 
         print("• conv layers {:>13} layers".format(self.n_conv_layers))
 
-        act_fun = fun.activation_functions[self.act_fun_codes_per_layer[0]] # da modificare
+        act_fun = fun.activation_functions[self.act_fun_codes_per_layer[0]]
         print("• hidden layer: {:>11} nodes".format(self.nodes_per_layer[0]), \
               "{:^10} \t (activation function)".format(act_fun.__name__))
 

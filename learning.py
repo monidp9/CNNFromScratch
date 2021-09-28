@@ -7,6 +7,23 @@ from copy import deepcopy
 DELTA_MAX = 50
 DELTA_MIN = 1e-06
 
+
+def accuracy(y, label):
+    pred = list()
+    target = list()
+
+    n_instances = y.shape[1]
+    for i in range(n_instances):
+        pred_value = np.argmax(y[:, i])
+        pred.append(pred_value)
+        target_value = np.argmax(label[:, i])
+        target.append(target_value)
+
+    pred = np.array(pred)
+    target = np.array(target)
+    return np.sum(pred == target) / len(pred)
+
+
 def __get_delta(net, t, layer_input, layer_output) :
     delta = []
 

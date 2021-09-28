@@ -181,3 +181,12 @@ def train_test_split(X, t, test_size=0.25):
     t_test = t[:,test_index]
 
     return X_train, X_test, t_train, t_test
+
+def convert_to_cnn_input(X, image_size):
+    n_instances = X.shape[1]
+    new_X = np.empty(shape=(n_instances, image_size, image_size))
+
+    for i in range(n_instances):
+        new_X[i] = X[:, i].reshape(image_size, image_size)
+
+    return new_X

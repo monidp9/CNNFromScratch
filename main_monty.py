@@ -131,23 +131,4 @@ X, t = mndata.load_training()
 X = utility.get_mnist_data(X)
 t = utility.get_mnist_labels(t)
 
-x1 = X[:, 0:1].reshape(28, 28)
-x2 = X[:, 1:2].reshape(28, 28)
-
-feature_volume = list()
-feature_volume.append(x1)
-feature_volume = np.array(feature_volume)
-
-# CONVOLUZIONE
-kernel = np.random.uniform(size=(2, 1, 3, 3))
-
-print(x1.shape)
-conv_feature_volume = convolution(x1, kernel)
-print(conv_feature_volume.shape)
-
-# POOLING
-# pooled_feature_volume = max_pooling(conv_feature_volume, 3)
-# print(pooled_feature_volume.shape)
-#
-# plt.imshow(pooled_feature_volume[0])
-# plt.show()
+X_train, t_train = utility.get_random_dataset(X, t, 100)

@@ -154,7 +154,7 @@ def get_random_dataset(X, t, n_samples_considered=10000):
 
     return new_X, new_t
 
-def get_mnist_normalization_data(X): # non va fatta cosi
+def get_scaled_data(X):
     X = X.astype('float32')
     X = X / 255
     return X 

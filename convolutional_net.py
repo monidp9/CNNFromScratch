@@ -5,6 +5,8 @@ import numpy as np
 import functions as fun
 import utility
 
+
+
 class ConvolutionalNet:
     def __init__(self, n_conv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code):
         self.n_input_nodes = 784        # dipende dal dataset: 784
@@ -15,10 +17,10 @@ class ConvolutionalNet:
 
         self.CONV_ACT_FUN_CODE = 1
         self.MNIST_IMAGE_SIZE = 28
-        self.KERNEL_SIZE = 3            # kernel uguali di dimensione quadrata
-        self.STRIDE = 1                 # S: spostamento
-        self.PADDING = 1                # P: padding
-        self.n_full_conn_layers = 2     # impostazione rete shallow full connected
+        self.KERNEL_SIZE = 3
+        self.STRIDE = 1
+        self.PADDING = 1
+        self.n_fc_layers = 2
 
         self.act_fun_codes_per_layer = act_fun_codes.copy()
         self.nodes_per_layer = list()
@@ -28,9 +30,9 @@ class ConvolutionalNet:
         self.error_fun_code = error_fun_code
 
         self.weights = list()
-        self.full_conn_bias = list()
-        self.kernels = list()           # lista di kernels quadrimensionali
-        self.conv_bias = list()
+        self.fc_bias = list()
+        self.kernels = list()
+        self.cv_bias = list()
 
         self.__initialize_weights_and_full_conn_bias()
         self.__initialize_kernels_and_conv_bias()
@@ -48,11 +50,11 @@ class ConvolutionalNet:
             n_nodes_conv_layer = self.get_n_nodes_feature_volume_pre_pooling(i)
 
             print(n_nodes_conv_layer)
-            self.conv_bias.append(np.random.normal(mu, sigma, size=(n_nodes_conv_layer, 1)))
+            self.cv_bias.append(np.random.normal(mu, sigma, size=(n_nodes_conv_layer, 1)))
 
     def __initialize_weights_and_full_conn_bias(self):
         mu, sigma = 0, 0.1
-        for i in range(self.n_full_conn_layers):
+        for i in range(self.n_fc_layers):
             if i == 0:
                 n_nodes_input = self.get_n_nodes_feature_volume(self.n_conv_layers)
 
@@ -62,7 +64,7 @@ class ConvolutionalNet:
                 self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i],
                                                                 self.nodes_per_layer[i-1])))
 
-            self.full_conn_bias.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i], 1)))
+            self.fc_bias.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i], 1)))
 
     def get_n_nodes_feature_volume(self, n_conv_layer):
         W = self.MNIST_IMAGE_SIZE
@@ -105,7 +107,7 @@ class ConvolutionalNet:
         return n_nodes
 
     def padding(self, feature_volume):
-        # operazione di padding adatta solo all'applicazione
+        # operazione di padding adatta solo con l'applicazione
         # di un filtro di dimensione 3x3
 
         remove_dim = False
@@ -222,14 +224,14 @@ class ConvolutionalNet:
         return np.array(pooled_feature_volume)
 
     def __cv_forward_step(self, x):
-        cv_outputs = list()
         cv_inputs = list()
+        cv_outputs = list()
 
         for i in range(self.n_conv_layers) :
             if i == 0 :
-                conv_x = self.__convolution(x, self.kernels[i], self.conv_bias[i])
+                conv_x = self.__convolution(x, self.kernels[i], self.cv_bias[i])
             else :
-                conv_x = self.__convolution(cv_outputs[i-1], self.kernels[i], self.conv_bias[i])
+                conv_x = self.__convolution(cv_outputs[i-1], self.kernels[i], self.cv_bias[i])
 
             cv_inputs.append(conv_x)
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
@@ -247,13 +249,13 @@ class ConvolutionalNet:
         fc_layers_inputs = list()
         fc_layers_outputs = list()
 
-        for i in range(self.n_full_conn_layers):
+        for i in range(self.n_fc_layers):
             if i == 0:
                 # calcolo input dei nodi del primo strato nascosto
-                layer_input = np.dot(self.weights[i], x) + self.full_conn_bias[i]
+                layer_input = np.dot(self.weights[i], x) + self.fc_bias[i]
             else:
                 # calcolo input dei nodi di uno strato nascosto generico
-                layer_input = np.dot(self.weights[i], fc_layers_outputs[i - 1]) + self.full_conn_bias[i]
+                layer_input = np.dot(self.weights[i], fc_layers_outputs[i - 1]) + self.fc_bias[i]
 
             fc_layers_inputs.append(layer_input)
 
@@ -289,7 +291,7 @@ class ConvolutionalNet:
 
             _, fc_outputs = self.__fc_forward_step(input_for_fc)
 
-            pred_values.append(fc_outputs[self.n_full_conn_layers - 1])
+            pred_values.append(fc_outputs[self.n_fc_layers - 1])
 
         pred_values = np.array(pred_values)
         pred_values = pred_values.squeeze()

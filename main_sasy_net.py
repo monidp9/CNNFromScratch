@@ -23,7 +23,7 @@ net.print_config()
 
 X,t = utility.get_random_dataset(X,t,5500) 
 
-X = utility.get_mnist_normalization_data(X)
+X = utility.get_scaled_data(X)
 
 X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.10)
 

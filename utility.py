@@ -154,6 +154,11 @@ def get_random_dataset(X, t, n_samples_considered=10000):
 
     return new_X, new_t
 
+def get_mnist_normalization_data(X): # non va fatta cosi
+    X = X.astype('float32')
+    X = X / 255
+    return X 
+
 def train_test_split(X, t, test_size=0.25):
 
     n_samples = X.shape[1]

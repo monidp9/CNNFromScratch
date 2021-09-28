@@ -5,8 +5,8 @@ import functions as fun
 
 class Net:
     def __init__(self, n_hidden_layers, n_hidden_nodes_per_layer, act_fun_codes, error_fun_code):
-        self.n_input_nodes = 4 # dipende dal dataset: 784
-        self.n_output_nodes = 3 # dipende dal dataset: 10
+        self.n_input_nodes = 784 # dipende dal dataset: 784
+        self.n_output_nodes = 10 # dipende dal dataset: 10
         self.n_layers = n_hidden_layers + 1
 
         self.error_fun_code = error_fun_code

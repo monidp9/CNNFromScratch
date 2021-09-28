@@ -2,14 +2,13 @@ from numpy.core.defchararray import _partition_dispatcher
 from functions import cross_entropy
 from learning import back_propagation
 from learning import conv_batch_learning
-
+import functions as fun 
 import utility
 import numpy as np
 import matplotlib.pyplot as plt
 
 from convolutional_net import ConvolutionalNet
 from mnist import MNIST
-
 
 # caricamento dataset
 mndata = MNIST('./python-mnist/data')
@@ -18,13 +17,24 @@ X, t = mndata.load_training()
 X = utility.get_mnist_data(X)
 t = utility.get_mnist_labels(t)
 
-
-net = ConvolutionalNet(n_conv_layers = 2, n_kernels_per_layer = [2,2], # vincolare il numero max di layer convolutivi
-                       n_hidden_nodes = 5, act_fun_codes = [2,2], error_fun_code = 1)
+net = ConvolutionalNet(n_conv_layers = 2, n_kernels_per_layer = [1,1], # vincolare il numero max di layer convolutivi
+                       n_hidden_nodes = 10, act_fun_codes = [1,2], error_fun_code = 1)
 
 net.print_config()
 
-X,t = utility.get_random_dataset(X,t,20)
+X,t = utility.get_random_dataset(X,t,100) 
+X = utility.get_mnist_normalization_data(X)
+
 X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.25)
 
+y_train = net.sim(X_train)
+print("errore prima su train: ",fun.error_functions[net.error_fun_code](y_train, t_train))
+
 net = conv_batch_learning(net, X_train, t_train, X_test, t_test)
+
+y_test = net.sim(X_test)
+
+
+print("errore su test : ",fun.error_functions[net.error_fun_code](y_test, t_test))
+
+# print("accuratezza: ", utility.accuracy(y_test, t_test))

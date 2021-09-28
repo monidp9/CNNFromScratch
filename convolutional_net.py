@@ -288,6 +288,10 @@ class ConvolutionalNet:
 
             tot_layer_output.append(layer_output[self.n_full_conn_layers-1])
 
+        tot_layer_output = np.array(tot_layer_output)
+        tot_layer_output = tot_layer_output.squeeze()
+        tot_layer_output = tot_layer_output.transpose()
+        
         return tot_layer_output
 
     def print_config(self):

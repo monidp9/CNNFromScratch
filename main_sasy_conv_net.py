@@ -17,7 +17,7 @@ X, t = mndata.load_training()
 X = utility.get_mnist_data(X)
 t = utility.get_mnist_labels(t)
 
-net = ConvolutionalNet(n_conv_layers = 2, n_kernels_per_layer = [1,1], # vincolare il numero max di layer convolutivi
+net = ConvolutionalNet(n_cv_layers = 2, n_kernels_per_layer = [1,1], # vincolare il numero max di layer convolutivi
                        n_hidden_nodes = 10, act_fun_codes = [1,2], error_fun_code = 1)
 
 net.print_config()

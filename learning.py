@@ -10,23 +10,6 @@ from matplotlib.pyplot import prism
 DELTA_MAX = 50
 DELTA_MIN = 1e-06
 
-
-
-def accuracy(y, label):
-    pred = list()
-    target = list()
-
-    n_instances = y.shape[1]
-    for i in range(n_instances):
-        pred_value = np.argmax(y[:, i])
-        pred.append(pred_value)
-        target_value = np.argmax(label[:, i])
-        target.append(target_value)
-
-    pred = np.array(pred)
-    target = np.array(target)
-    return np.sum(pred == target) / len(pred)
-
 # -----------------------------------MULTILAYER NEURAL NETWORK -----------------------------------
 
 def __get_delta(net, t, layer_input, layer_output) :
@@ -135,56 +118,56 @@ class struct_per_RPROP:
     def __init__(self, net):
         self.kernels_deriv = list()
         self.weights_deriv = list()
-        self.conv_bias_deriv = list()
-        self.full_conn_bias_deriv = list()
+        self.cv_bias_deriv = list()
+        self.fc_bias_deriv = list()
 
         self.kernels_deriv_per_epochs = list()
         self.weights_deriv_per_epochs = list()
-        self.conv_bias_deriv_per_epochs = list()
-        self.full_conn_bias_deriv_per_epochs = list()
+        self.cv_bias_deriv_per_epochs = list()
+        self.fc_bias_deriv_per_epochs = list()
 
         self.kernels_delta = list()
         self.weights_delta = list()
-        self.conv_bias_delta = list()
-        self.full_conn_bias_delta = list()
+        self.cv_bias_delta = list()
+        self.fc_bias_delta = list()
 
         self.__initialize_delta(net)
 
     def __initialize_delta(self, net) :
 
         dim_kernels_per_layer = 1 # primo kernel applicato su input ha dimensione 1
-        for i in range(net.n_conv_layers) :
+        for i in range(net.n_cv_layers) :
             self.kernels_delta.append(np.random.uniform(size=(net.n_kernels_per_layer[i], dim_kernels_per_layer,
                                                                 net.KERNEL_SIZE, net.KERNEL_SIZE)))
 
             dim_kernels_per_layer = net.n_kernels_per_layer[i]
 
-            n_conv_bias_per_layer = net.get_n_nodes_feature_volume_pre_pooling(i)
-            self.conv_bias_delta.append(np.random.uniform(size=(n_conv_bias_per_layer,1)))
+            n_cv_bias_per_layer = net.get_n_nodes_feature_volume_pre_pooling(i)
+            self.cv_bias_delta.append(np.random.uniform(size=(n_cv_bias_per_layer,1)))
 
         for i in range(net.n_fc_layers):
             if i == 0:
-                n_nodes_input = net.get_n_nodes_feature_volume(net.n_conv_layers)
+                n_nodes_input = net.get_n_nodes_feature_volume(net.n_cv_layers)
                 self.weights_delta.append(np.random.uniform(size=(net.nodes_per_layer[i],
                                                         n_nodes_input)))
             else:
                 self.weights_delta.append(np.random.uniform(size=(net.nodes_per_layer[i],
                                                         net.nodes_per_layer[i-1])))
 
-            self.full_conn_bias_delta.append(np.random.uniform(size=(net.nodes_per_layer[i], 1)))
+            self.fc_bias_delta.append(np.random.uniform(size=(net.nodes_per_layer[i], 1)))
 
-    def set_deriv(self, total_kernels_deriv, total_weights_deriv, total_conv_bias_deriv, total_full_conn_bias_deriv):
+    def set_deriv(self, total_kernels_deriv, total_weights_deriv, total_cv_bias_deriv, total_fc_bias_deriv):
         self.kernels_deriv = total_kernels_deriv
         self.weights_deriv = total_weights_deriv
-        self.conv_bias_deriv = total_conv_bias_deriv
-        self.full_conn_bias_deriv = total_full_conn_bias_deriv
+        self.cv_bias_deriv = total_cv_bias_deriv
+        self.fc_bias_deriv = total_fc_bias_deriv
 
 def __convolutional_RPROP(net, struct, eta_n, eta_p, epoch):
 
     kernels_deriv_prev_epoch = struct.kernels_deriv_per_epochs[epoch-1]
-    conv_bias_deriv_prev_epoch = struct.conv_bias_deriv_per_epochs[epoch-1]
+    cv_bias_deriv_prev_epoch = struct.cv_bias_deriv_per_epochs[epoch-1]
 
-    for l in range(net.n_conv_layers) :
+    for l in range(net.n_cv_layers) :
 
         layer_kernels_deriv_prev_epoch = kernels_deriv_prev_epoch[l]
         layer_kernels_deriv = struct.kernels_deriv[l]
@@ -206,38 +189,38 @@ def __convolutional_RPROP(net, struct, eta_n, eta_p, epoch):
 
                         layer_kernels[k,z,i,j] = layer_kernels[k,z,i,j] - np.sign(layer_kernels_deriv[k,z,i,j]) * layer_kernels_delta[k,z,i,j]
 
-        layer_conv_bias_deriv_prev_epoch = conv_bias_deriv_prev_epoch[l]
-        layer_conv_bias_deriv = struct.conv_bias_deriv[l]
-        layer_conv_bias = net.cv_bias[l]
-        layer_conv_bias_delta = struct.conv_bias_delta[l]
+        layer_cv_bias_deriv_prev_epoch = cv_bias_deriv_prev_epoch[l]
+        layer_cv_bias_deriv = struct.cv_bias_deriv[l]
+        layer_cv_bias = net.cv_bias[l]
+        layer_cv_bias_delta = struct.cv_bias_delta[l]
 
-        for i in range(layer_conv_bias.shape[0]) :
-            if layer_conv_bias_deriv_prev_epoch[i] * layer_conv_bias_deriv[i] > 0 :
-                layer_conv_bias_delta[i] = min(DELTA_MAX, eta_p * layer_conv_bias_delta[i])
+        for i in range(layer_cv_bias.shape[0]) :
+            if layer_cv_bias_deriv_prev_epoch[i] * layer_cv_bias_deriv[i] > 0 :
+                layer_cv_bias_delta[i] = min(DELTA_MAX, eta_p * layer_cv_bias_delta[i])
 
-            if layer_conv_bias_deriv_prev_epoch[i] * layer_conv_bias_deriv[i] < 0 :
-                layer_conv_bias_delta[i] = max(DELTA_MIN, eta_n * layer_conv_bias_delta[i])
+            if layer_cv_bias_deriv_prev_epoch[i] * layer_cv_bias_deriv[i] < 0 :
+                layer_cv_bias_delta[i] = max(DELTA_MIN, eta_n * layer_cv_bias_delta[i])
 
-            layer_conv_bias[i] = layer_conv_bias[i] - np.sign(layer_conv_bias_deriv[i]) * layer_conv_bias_delta[i]
+            layer_cv_bias[i] = layer_cv_bias[i] - np.sign(layer_cv_bias_deriv[i]) * layer_cv_bias_delta[i]
 
     return net
 
-def __full_conn_RPROP(net, struct, eta_n, eta_p, epoch):
+def __fc_RPROP(net, struct, eta_n, eta_p, epoch):
 
     weights_deriv_prev_epoch = struct.weights_deriv_per_epochs[epoch-1]
-    full_conn_bias_deriv_prev_epoch = struct.full_conn_bias_deriv_per_epochs[epoch-1]
+    fc_bias_deriv_prev_epoch = struct.fc_bias_deriv_per_epochs[epoch-1]
 
     for l in range(net.n_fc_layers) :
         layer_weights_deriv_prev_epoch = weights_deriv_prev_epoch[l]
         layer_weights_deriv = struct.weights_deriv[l]
         layer_weights_delta = struct.weights_delta[l]
 
-        layer_full_conn_bias_deriv_prev_epoch = full_conn_bias_deriv_prev_epoch[l]
-        layer_full_conn_bias_deriv = struct.full_conn_bias_deriv[l]
-        layer_full_conn_bias_delta = struct.full_conn_bias_delta[l]
+        layer_fc_bias_deriv_prev_epoch = fc_bias_deriv_prev_epoch[l]
+        layer_fc_bias_deriv = struct.fc_bias_deriv[l]
+        layer_fc_bias_delta = struct.fc_bias_delta[l]
 
         layer_weights = net.weights[l]
-        layer_full_conn_bias = net.fc_bias[l]
+        layer_fc_bias = net.fc_bias[l]
 
         n_nodes_per_layer = layer_weights_deriv.shape[0]
         n_connections_per_nodes = layer_weights_deriv.shape[1]
@@ -252,12 +235,12 @@ def __full_conn_RPROP(net, struct, eta_n, eta_p, epoch):
 
                 layer_weights[i,j] = layer_weights[i,j] - np.sign(layer_weights_deriv[i,j]) * layer_weights_delta[i,j]
 
-            if layer_full_conn_bias_deriv_prev_epoch[i] * layer_full_conn_bias_deriv[i] > 0 :
-                layer_full_conn_bias_delta[i] = min(DELTA_MAX, eta_p * layer_full_conn_bias_delta[i])
-            if layer_full_conn_bias_deriv_prev_epoch[i] * layer_full_conn_bias_deriv[i] < 0 :
-                layer_full_conn_bias_delta[i] = max(DELTA_MIN, eta_n * layer_full_conn_bias_delta[i])
+            if layer_fc_bias_deriv_prev_epoch[i] * layer_fc_bias_deriv[i] > 0 :
+                layer_fc_bias_delta[i] = min(DELTA_MAX, eta_p * layer_fc_bias_delta[i])
+            if layer_fc_bias_deriv_prev_epoch[i] * layer_fc_bias_deriv[i] < 0 :
+                layer_fc_bias_delta[i] = max(DELTA_MIN, eta_n * layer_fc_bias_delta[i])
 
-            layer_full_conn_bias[i] = layer_full_conn_bias[i] - np.sign(layer_full_conn_bias_deriv[i]) * layer_full_conn_bias_delta[i]
+            layer_fc_bias[i] = layer_fc_bias[i] - np.sign(layer_fc_bias_deriv[i]) * layer_fc_bias_delta[i]
 
     return net
 
@@ -267,12 +250,12 @@ def RPROP (net, str_rprop, eta_n, eta_p, epoch):   # serve restituire la rete in
         net = conv_standard_gradient_descent(net, str_rprop, eta_n)
     else :
         net = __convolutional_RPROP(net, str_rprop, eta_n, eta_p, epoch)
-        net = __full_conn_RPROP(net, str_rprop, eta_n, eta_p, epoch)
+        net = __fc_RPROP(net, str_rprop, eta_n, eta_p, epoch)
 
     str_rprop.kernels_deriv_per_epochs.append(str_rprop.kernels_deriv)
-    str_rprop.conv_bias_deriv_per_epochs.append(str_rprop.conv_bias_deriv)
+    str_rprop.cv_bias_deriv_per_epochs.append(str_rprop.cv_bias_deriv)
     str_rprop.weights_deriv_per_epochs.append(str_rprop.weights_deriv)
-    str_rprop.full_conn_bias_deriv_per_epochs.append(str_rprop.full_conn_bias_deriv)
+    str_rprop.fc_bias_deriv_per_epochs.append(str_rprop.fc_bias_deriv)
 
     return net
 
@@ -291,8 +274,8 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
     min_error = error_fun(y_val, t_val)
 
     total_weights_deriv = None
-    total_conv_bias_deriv = None
-    total_conv_bias_deriv = None
+    total_cv_bias_deriv = None
+    total_cv_bias_deriv = None
     total_kernels_deriv = None
 
     n_instances = X_train.shape[1]
@@ -307,25 +290,25 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
             x = X_train[:, n].reshape(-1, 1)
             t = t_train[:, n].reshape(-1, 1)
 
-            weights_deriv, full_conn_bias_deriv, kernels_deriv, conv_bias_deriv = conv_back_propagation(net, x, t)
+            weights_deriv, fc_bias_deriv, kernels_deriv, cv_bias_deriv = conv_back_propagation(net, x, t)
 
             if n == 0:
                 total_weights_deriv = deepcopy(weights_deriv)
-                total_full_conn_bias_deriv = deepcopy(full_conn_bias_deriv)
-                total_conv_bias_deriv = deepcopy(conv_bias_deriv)
+                total_fc_bias_deriv = deepcopy(fc_bias_deriv)
+                total_cv_bias_deriv = deepcopy(cv_bias_deriv)
                 total_kernels_deriv = deepcopy(kernels_deriv)
 
             else:
-                for i in range(net.n_conv_layers):
+                for i in range(net.n_cv_layers):
                     total_kernels_deriv[i] = np.add(total_kernels_deriv[i], kernels_deriv[i])
-                    total_conv_bias_deriv[i] = np.add(total_conv_bias_deriv[i], conv_bias_deriv[i])
+                    total_cv_bias_deriv[i] = np.add(total_cv_bias_deriv[i], cv_bias_deriv[i])
 
 
                 for i in range(net.n_fc_layers) :
                     total_weights_deriv[i] = np.add(total_weights_deriv[i], weights_deriv[i])
-                    total_full_conn_bias_deriv[i] = np.add(total_full_conn_bias_deriv[i], full_conn_bias_deriv[i])
+                    total_fc_bias_deriv[i] = np.add(total_fc_bias_deriv[i], fc_bias_deriv[i])
 
-        str_rprop.set_deriv(total_kernels_deriv,total_weights_deriv,total_conv_bias_deriv,total_full_conn_bias_deriv)
+        str_rprop.set_deriv(total_kernels_deriv,total_weights_deriv,total_cv_bias_deriv,total_fc_bias_deriv)
 
         net = RPROP (net, str_rprop, eta_min, eta_max, epoch)
 
@@ -348,13 +331,13 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
 
 def conv_standard_gradient_descent(net, str_rprop, eta):
 
-    for i in range(net.n_conv_layers):
+    for i in range(net.n_cv_layers):
         net.kernels[i] = net.kernels[i] - (eta * str_rprop.kernels_deriv[i])
-        net.cv_bias[i] = net.cv_bias[i] - (eta * str_rprop.conv_bias_deriv[i])
+        net.cv_bias[i] = net.cv_bias[i] - (eta * str_rprop.cv_bias_deriv[i])
 
     for i in range(net.n_fc_layers):
         net.weights[i] = net.weights[i] - (eta * str_rprop.weights_deriv[i])
-        net.fc_bias[i] = net.fc_bias[i] - (eta * str_rprop.full_conn_bias_deriv[i])
+        net.fc_bias[i] = net.fc_bias[i] - (eta * str_rprop.fc_bias_deriv[i])
 
     return net
 
@@ -363,7 +346,7 @@ def conv_standard_gradient_descent(net, str_rprop, eta):
 def __get_fc_delta(net, t, fc_inputs, fc_outputs):
     delta = list()
 
-    n_nodes = net.get_n_nodes_feature_volume(net.n_conv_layers)
+    n_nodes = net.get_n_nodes_feature_volume(net.n_cv_layers)
     delta.append(np.zeros(n_nodes))
     for i in range(net.n_fc_layers):
         delta.append(np.zeros(net.nodes_per_layer[i]))
@@ -390,12 +373,12 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
     # cv_inputs: feature volume a cui è stata applicata la convoluzione (senza ReLU)
     # cv_outputs: feature volume a cui è stato applicato il pooling
 
-    conv_delta = [0] * net.n_conv_layers
-    pooling_delta = [0] * net.n_conv_layers
+    conv_delta = [0] * net.n_cv_layers
+    pooling_delta = [0] * net.n_cv_layers
 
     # riporto i delta dell'ultimo strato nella versione matriciale
     index = 0
-    pooling_fv = cv_outputs[net.n_conv_layers - 1]
+    pooling_fv = cv_outputs[net.n_cv_layers - 1]
     depth, rows, columns = pooling_fv.shape[0], \
                            pooling_fv.shape[1], \
                            pooling_fv.shape[2]
@@ -408,11 +391,11 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
     pooling_delta[-1] = last_layer_delta
 
     # calcolo dei delta
-    for l in range(net.n_conv_layers - 1, -1, -1):
+    for l in range(net.n_cv_layers - 1, -1, -1):
         conv_fv = cv_inputs[l]
         pooling_fv = cv_outputs[l]
 
-        last_layer = (l == net.n_conv_layers - 1)
+        last_layer = (l == net.n_cv_layers - 1)
 
         # calcolo dei delta del layer di pooling (DA RIFARE)
         if not last_layer:
@@ -491,7 +474,7 @@ def __get_cv_weights_bias_deriv(net, x, cv_delta, cv_outputs):
     delta_values = list()
     x_values = list()
 
-    for l in range(net.n_conv_layers):
+    for l in range(net.n_cv_layers):
         conv_delta = cv_delta[l]
         layer_kernels = net.kernels[l]
 
@@ -565,13 +548,13 @@ def conv_back_propagation(net, x, t):
     # i delta restituiti sono matrici
     conv_delta = __get_cv_delta(net, cv_inputs, cv_outputs, fc_delta[0])
 
-    flattened_layer = cv_outputs[net.n_conv_layers - 1].flatten()
+    flattened_layer = cv_outputs[net.n_cv_layers - 1].flatten()
     flattened_layer = flattened_layer.reshape(-1, 1)
 
     fc_weights_deriv, fc_bias_deriv =  __get_fc_weights_bias_deriv(net, flattened_layer, fc_delta, fc_outputs)
     cv_kernels_deriv, cv_bias_deriv = __get_cv_weights_bias_deriv(net, x, conv_delta, cv_outputs)
 
-    for i in range(net.n_conv_layers):
+    for i in range(net.n_cv_layers):
         cv_bias_deriv[i] = cv_bias_deriv[i].flatten()
         cv_bias_deriv[i] = cv_bias_deriv[i].reshape(-1, 1)
 

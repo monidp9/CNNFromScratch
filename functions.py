@@ -51,6 +51,20 @@ def cross_entropy_softmax_deriv(y, t):
     softmax_y = softmax(y, axis=0)
     return softmax_y - t
 
+def accuracy(y, label):
+    pred = list()
+    target = list()
+
+    n_instances = y.shape[1]
+    for i in range(n_instances):
+        pred_value = np.argmax(y[:, i])
+        pred.append(pred_value)
+        target_value = np.argmax(label[:, i])
+        target.append(target_value)
+
+    pred = np.array(pred)
+    target = np.array(target)
+    return np.sum(pred == target) / len(pred)
 
 activation_functions = [sigmoid, relu, identity]
 activation_functions_deriv= [sigmoid_deriv, relu_deriv, identity_deriv]

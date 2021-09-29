@@ -8,11 +8,11 @@ import utility
 
 
 class ConvolutionalNet:
-    def __init__(self, n_conv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code):
+    def __init__(self, n_cv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code):
         self.n_input_nodes = 784        # dipende dal dataset: 784
         self.n_output_nodes = 10        # dipende dal dataset: 10
 
-        self.n_conv_layers = n_conv_layers
+        self.n_cv_layers = n_cv_layers
         self.n_kernels_per_layer = n_kernels_per_layer.copy()
 
         self.CONV_ACT_FUN_CODE = 1
@@ -34,15 +34,15 @@ class ConvolutionalNet:
         self.kernels = list()
         self.cv_bias = list()
 
-        self.__initialize_weights_and_full_conn_bias()
-        self.__initialize_kernels_and_conv_bias()
+        self.__initialize_kernels_and_cv_bias()
+        self.__initialize_weights_and_fc_bias()
 
-    def __initialize_kernels_and_conv_bias(self):
+    def __initialize_kernels_and_cv_bias(self):
         # il primo kernel applicato su input ha dimensione 1
         dim_kernels_per_layer = 1 
         mu, sigma = 0, 0.1
 
-        for i in range(self.n_conv_layers):
+        for i in range(self.n_cv_layers):
             self.kernels.append(np.random.normal(mu, sigma, size=(self.n_kernels_per_layer[i], dim_kernels_per_layer,
                                                                   self.KERNEL_SIZE, self.KERNEL_SIZE)))
 
@@ -52,11 +52,11 @@ class ConvolutionalNet:
             print(n_nodes_conv_layer)
             self.cv_bias.append(np.random.normal(mu, sigma, size=(n_nodes_conv_layer, 1)))
 
-    def __initialize_weights_and_full_conn_bias(self):
+    def __initialize_weights_and_fc_bias(self):
         mu, sigma = 0, 0.1
         for i in range(self.n_fc_layers):
             if i == 0:
-                n_nodes_input = self.get_n_nodes_feature_volume(self.n_conv_layers)
+                n_nodes_input = self.get_n_nodes_feature_volume(self.n_cv_layers)
 
                 self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i],
                                                                       n_nodes_input)))
@@ -227,7 +227,7 @@ class ConvolutionalNet:
         cv_inputs = list()
         cv_outputs = list()
 
-        for i in range(self.n_conv_layers) :
+        for i in range(self.n_cv_layers) :
             if i == 0 :
                 conv_x = self.__convolution(x, self.kernels[i], self.cv_bias[i])
             else :
@@ -270,7 +270,7 @@ class ConvolutionalNet:
 
         cv_inputs, cv_outputs = self.__cv_forward_step(x)
 
-        input_for_fc = cv_outputs[self.n_conv_layers - 1].flatten()
+        input_for_fc = cv_outputs[self.n_cv_layers - 1].flatten()
         input_for_fc = input_for_fc.reshape(-1, 1)
 
         fc_inputs, fc_outputs = self.__fc_forward_step(input_for_fc)
@@ -286,7 +286,7 @@ class ConvolutionalNet:
 
             _, cv_outputs = self.__cv_forward_step(X[i])
 
-            input_for_fc = cv_outputs[self.n_conv_layers - 1].flatten()
+            input_for_fc = cv_outputs[self.n_cv_layers - 1].flatten()
             input_for_fc = input_for_fc.reshape(-1, 1)
 
             _, fc_outputs = self.__fc_forward_step(input_for_fc)
@@ -305,7 +305,7 @@ class ConvolutionalNet:
 
         print("• input layer: {:>12} nodes".format(self.n_input_nodes))
 
-        print("• conv layers {:>13} layers".format(self.n_conv_layers))
+        print("• conv layers {:>13} layers".format(self.n_cv_layers))
 
         act_fun = fun.activation_functions[self.act_fun_codes_per_layer[0]]
         print("• hidden layer: {:>11} nodes".format(self.nodes_per_layer[0]), \

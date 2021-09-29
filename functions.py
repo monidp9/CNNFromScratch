@@ -23,9 +23,11 @@ def sigmoid_deriv(x):
 
 def relu_deriv(x):
     y = x.copy()
-    y[y > 0] = 1
-    y[y <= 0] = 0
-    return y
+    if isinstance(y, np.ndarray):
+        y[y > 0] = 1
+        y[y <= 0] = 0
+        return y
+    return 1 if y > 0 else 0
 
 # funzioni di errore
 def sum_of_squares(y, t):

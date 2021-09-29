@@ -49,7 +49,6 @@ class ConvolutionalNet:
             dim_kernels_per_layer = self.n_kernels_per_layer[i]
             n_nodes_conv_layer = self.get_n_nodes_feature_volume_pre_pooling(i)
 
-            print(n_nodes_conv_layer)
             self.cv_bias.append(np.random.normal(mu, sigma, size=(n_nodes_conv_layer, 1)))
 
     def __initialize_weights_and_fc_bias(self):

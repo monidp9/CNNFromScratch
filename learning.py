@@ -262,7 +262,7 @@ def RPROP (net, str_rprop, eta_n, eta_p, epoch):   # serve restituire la rete in
 def conv_batch_learning(net, X_train, t_train, X_val, t_val):
     eta_min = 0.5
     eta_max = 1.2
-    n_epochs = 100
+    n_epochs = 10
 
     train_errors = list()
     val_errors = list()
@@ -285,6 +285,7 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
     for epoch in range(n_epochs):
 
         # somma delle derivate
+        # MOTIVO PRINCIPALE DI RALLENTAMENTO DEL LEARNING
         for n in range(n_instances):
             # si estrapolano singole istanze come vettori colonna
             x = X_train[:, n].reshape(-1, 1)
@@ -321,7 +322,7 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
         train_errors.append(train_error)
         val_errors.append(val_error)
 
-        print('epoch {}, train error {}, val error {}'.format(epoch, train_error, val_error))
+        print('epoch {}, train error {:.2f}, val error {:.2f}'.format(epoch, train_error, val_error))
 
         if val_error < min_error:
             min_error = val_error
@@ -379,16 +380,18 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
     # riporto i delta dell'ultimo strato nella versione matriciale
     index = 0
     pooling_fv = cv_outputs[net.n_cv_layers - 1]
-    depth, rows, columns = pooling_fv.shape[0], \
-                           pooling_fv.shape[1], \
-                           pooling_fv.shape[2]
+    depth, rows, columns = pooling_fv.shape[0], pooling_fv.shape[1], pooling_fv.shape[2]
     last_layer_delta = np.zeros((depth, rows, columns))
+
     for d in range(depth):
         for i in range(rows):
             for j in range(columns):
                 last_layer_delta[d, i, j] = flattened_delta[index]
                 index += 1
     pooling_delta[-1] = last_layer_delta
+
+    delta_values = list()
+    weights_values = list()
 
     # calcolo dei delta
     for l in range(net.n_cv_layers - 1, -1, -1):
@@ -397,34 +400,45 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
 
         last_layer = (l == net.n_cv_layers - 1)
 
-        # calcolo dei delta del layer di pooling (DA RIFARE)
+        # calcolo dei delta del layer di pooling
         if not last_layer:
             pooling_delta[l] = np.zeros((pooling_fv.shape[0],
                                          pooling_fv.shape[1],
                                          pooling_fv.shape[2]))
 
-            act_fun = fun.activation_functions[net.CONV_ACT_FUN_CODE]
+            act_fun_deriv = fun.activation_functions_deriv[net.CONV_ACT_FUN_CODE]
+
+            # i kernel del layer sono quelli applicati e non quelli da applicare
+            layer_kernels = net.kernels[l + 1]            
             succ_conv_delta = conv_delta[l + 1]
 
-            layer_delta = pooling_delta[l]
-            # i kernel del layer sono quelli applicati e non quelli da applicare
-            layer_kernels = net.kernels[l + 1]
+            layer_pooling_delta = pooling_delta[l]
 
-            for d in range(pooling_fv.shape[0]):
-                for i in range(pooling_fv.shape[1]):
-                    for j in range(pooling_fv.shape[2]):
-                        node = pooling_fv[d, i, j]
+            depth = pooling_fv.shape[0]
+            n_rows = pooling_fv.shape[1]
+            n_columns = pooling_fv.shape[2]
+            n_kernels = layer_kernels.shape[0]
+            for d in range(depth):
+                for i in range(n_rows):
+                    for j in range(n_columns):
+                        node_value = pooling_fv[d, i, j]
+                        indexes = [(i - 1, j - 1), (i - 1, j), (i - 1, j + 1), \
+                                   (i + 1, j - 1), (i + 1, j), (i + 1, j + 1), \
+                                   (i, j - 1),     (i, j),     (i, j + 1)]
 
-                        node_delta = act_fun(node)
-                        temp_sum = 0
-                        for k in range(succ_conv_delta.shape[0]):
-                            delta = succ_conv_delta[k, i, j]
-                            # prende il peso centrale del kernel map
-                            weight = layer_kernels[k, d, 1, 1]
-                            temp_sum += delta * weight
+                        for r, c in indexes:
+                            if (r >= 0 and c >=0) and (r < n_rows and c < n_columns):
+                                for k in range(n_kernels):
+                                    kernel = layer_kernels[k]
+                                    delta_values.append(succ_conv_delta[k, r, c])
+                                    weights_values.append(kernel[d, (1 + r) % 3, (1 + c) % 3])
 
-                        node_delta = node_delta * temp_sum
-                        layer_delta[d, i, j] = node_delta
+                        node_delta = act_fun_deriv(node_value) * np.sum(np.multiply(delta_values, weights_values))
+                        layer_pooling_delta[d, i, j] = node_delta
+
+                        delta_values[:] = []
+                        weights_values[:] = []
+
 
         # calcolo dei delta del layer di convoluzione
         conv_delta[l] = np.zeros((conv_fv.shape[0],

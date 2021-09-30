@@ -2,6 +2,7 @@ import net
 import functions as fun
 import numpy as np
 import utility
+import time
 
 from copy import deepcopy
 from matplotlib.pyplot import prism
@@ -231,7 +232,7 @@ def __fc_RPROP(net, struct, eta_n, eta_p, epoch):
                 if layer_weights_deriv_prev_epoch[i,j] * layer_weights_deriv[i,j] > 0 :
                     layer_weights_delta[i,j] = min(DELTA_MAX, eta_p * layer_weights_delta[i,j])
                 if layer_weights_deriv_prev_epoch[i,j] * layer_weights_deriv[i,j] < 0 :
-                    layer_weights_delta[i,j] = max(DELTA_MIN,eta_n * layer_weights_delta[i,j])
+                    layer_weights_delta[i,j] = max(DELTA_MIN, eta_n * layer_weights_delta[i,j])
 
                 layer_weights[i,j] = layer_weights[i,j] - np.sign(layer_weights_deriv[i,j]) * layer_weights_delta[i,j]
 
@@ -262,7 +263,7 @@ def RPROP (net, str_rprop, eta_n, eta_p, epoch):   # serve restituire la rete in
 def conv_batch_learning(net, X_train, t_train, X_val, t_val):
     eta_min = 0.5
     eta_max = 1.2
-    n_epochs = 10
+    n_epochs = 50
 
     train_errors = list()
     val_errors = list()
@@ -283,7 +284,6 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
     str_rprop = struct_per_RPROP(net)
 
     for epoch in range(n_epochs):
-
         # somma delle derivate
         # MOTIVO PRINCIPALE DI RALLENTAMENTO DEL LEARNING
         for n in range(n_instances):
@@ -322,7 +322,7 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
         train_errors.append(train_error)
         val_errors.append(val_error)
 
-        print('epoch {}, train error {:.2f}, val error {:.2f}'.format(epoch, train_error, val_error))
+        print('epoch {}: train error {:.2f}, val error {:.2f}, acc {:.2f}'.format(epoch, train_error, val_error, fun.accuracy(y_val, t_val)))
 
         if val_error < min_error:
             min_error = val_error
@@ -418,6 +418,7 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
             n_rows = pooling_fv.shape[1]
             n_columns = pooling_fv.shape[2]
             n_kernels = layer_kernels.shape[0]
+
             for d in range(depth):
                 for i in range(n_rows):
                     for j in range(n_columns):

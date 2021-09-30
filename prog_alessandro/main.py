@@ -58,7 +58,7 @@ else:
 
 # path di dove si trovano i file MNIST
 # caricamento dataset
-mnistData = MNIST('./python-mnist/data')
+mnistData = MNIST('../python-mnist/data')
 
 # caricamento del training set
 trainingMNIST, trainingAttesoMNIST = mnistData.load_training()

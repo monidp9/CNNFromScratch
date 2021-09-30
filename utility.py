@@ -121,7 +121,7 @@ def get_mnist_labels(labels):
     one_hot_labels = np.zeros((10, labels.shape[0]))
 
     for n in range(labels.shape[0]):
-        label = labels[n] - 1
+        label = labels[n]
         one_hot_labels[label][n] = 1
 
     return one_hot_labels

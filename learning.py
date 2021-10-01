@@ -563,10 +563,10 @@ def conv_back_propagation(net, x, t):
     # i delta restituiti sono matrici
     conv_delta = __get_cv_delta(net, cv_inputs, cv_outputs, fc_delta[0])
 
-    flattened_layer = cv_outputs[net.n_cv_layers - 1].flatten()
-    flattened_layer = flattened_layer.reshape(-1, 1)
+    flattened_input = cv_outputs[net.n_cv_layers - 1].flatten()
+    flattened_input = flattened_input.reshape(-1, 1)
 
-    fc_weights_deriv, fc_bias_deriv =  __get_fc_weights_bias_deriv(net, flattened_layer, fc_delta, fc_outputs)
+    fc_weights_deriv, fc_bias_deriv =  __get_fc_weights_bias_deriv(net, flattened_input, fc_delta, fc_outputs)
     cv_kernels_deriv, cv_bias_deriv = __get_cv_weights_bias_deriv(net, x, conv_delta, cv_outputs)
 
     for i in range(net.n_cv_layers):

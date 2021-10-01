@@ -263,7 +263,7 @@ def RPROP (net, str_rprop, eta_n, eta_p, epoch):   # serve restituire la rete in
 def conv_batch_learning(net, X_train, t_train, X_val, t_val):
     eta_min = 0.5
     eta_max = 1.2
-    n_epochs = 50
+    n_epochs = 10
 
     train_errors = list()
     val_errors = list()
@@ -311,7 +311,7 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
 
         str_rprop.set_deriv(total_kernels_deriv,total_weights_deriv,total_cv_bias_deriv,total_fc_bias_deriv)
 
-        net = RPROP (net, str_rprop, eta_min, eta_max, epoch)
+        net = RPROP(net, str_rprop, eta_min, eta_max, epoch)
 
         y_train = net.sim(X_train)
         y_val = net.sim(X_val)
@@ -475,7 +475,7 @@ def __get_fc_weights_bias_deriv(net, x, fc_delta, fc_outputs):
         if l == 0:
             weights_deriv.append(np.dot(fc_delta[l + 1], np.transpose(x)))
         else:
-            weights_deriv.append(np.dot(fc_delta[l + 1], np.transpose(fc_outputs[l-1])))
+            weights_deriv.append(np.dot(fc_delta[l + 1], np.transpose(fc_outputs[l - 1])))
         bias_deriv.append(fc_delta[l + 1])
 
     return weights_deriv, bias_deriv
@@ -543,8 +543,8 @@ def __get_cv_weights_bias_deriv(net, x, cv_delta, cv_outputs):
                                 delta = conv_delta[k, i, j]
                                 delta_values.append(delta)
 
-                        deriv = np.multiply(delta_values, x_values)
-                        layer_kernels_deriv[k, d, r, c] = np.sum(deriv)
+                        prod = np.multiply(delta_values, x_values)
+                        layer_kernels_deriv[k, d, r, c] = np.sum(prod)
 
                         delta_values[:] = []
                         x_values[:] = []

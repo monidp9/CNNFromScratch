@@ -163,7 +163,7 @@ class struct_per_RPROP:
         self.cv_bias_deriv = total_cv_bias_deriv
         self.fc_bias_deriv = total_fc_bias_deriv
 
-def __convolutional_RPROP(net, struct, eta_n, eta_p, epoch):
+def __cv_RPROP(net, struct, eta_n, eta_p, epoch):
 
     kernels_deriv_prev_epoch = struct.kernels_deriv_per_epochs[epoch-1]
     cv_bias_deriv_prev_epoch = struct.cv_bias_deriv_per_epochs[epoch-1]
@@ -250,7 +250,7 @@ def RPROP (net, str_rprop, eta_n, eta_p, epoch):   # serve restituire la rete in
     if epoch==0:
         net = conv_standard_gradient_descent(net, str_rprop, eta_n)
     else :
-        net = __convolutional_RPROP(net, str_rprop, eta_n, eta_p, epoch)
+        net = __cv_RPROP(net, str_rprop, eta_n, eta_p, epoch)
         net = __fc_RPROP(net, str_rprop, eta_n, eta_p, epoch)
 
     str_rprop.kernels_deriv_per_epochs.append(str_rprop.kernels_deriv)

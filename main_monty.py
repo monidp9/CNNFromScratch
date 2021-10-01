@@ -25,7 +25,7 @@ X = utility.get_mnist_data(X)
 t = utility.get_mnist_labels(t)
 
 
-X, t = utility.get_random_dataset(X, t, 1500)
+X, t = utility.get_random_dataset(X, t, 1000)
 
 
 indexes_1 = np.where(t[0] == 1)

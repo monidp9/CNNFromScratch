@@ -54,7 +54,7 @@ def standard_gradient_descent(net, weights_deriv, bias_deriv, eta):
 
 def batch_learning(net, X_train, t_train, X_val, t_val):
     eta = 0.001
-    n_epochs = 300
+    n_epochs = 500
 
     train_errors = list()
     val_errors = list()
@@ -97,7 +97,8 @@ def batch_learning(net, X_train, t_train, X_val, t_val):
         train_errors.append(train_error)
         val_errors.append(val_error)
 
-        print('epoch {}, train error {}, val error {}'.format(epoch, train_error, val_error))
+        if epoch % 10 == 0:
+            print('epoch {}: train error {}, val error {}, acc {}'.format(epoch, train_error, val_error, fun.accuracy(y_val, t_val)))
 
         if val_error < min_error:
             min_error = val_error
@@ -310,7 +311,6 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
                     total_fc_bias_deriv[i] = np.add(total_fc_bias_deriv[i], fc_bias_deriv[i])
 
         str_rprop.set_deriv(total_kernels_deriv,total_weights_deriv,total_cv_bias_deriv,total_fc_bias_deriv)
-
         net = RPROP(net, str_rprop, eta_min, eta_max, epoch)
 
         y_train = net.sim(X_train)

@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 from convolutional_net import ConvolutionalNet
 from mnist import MNIST
 
+# MAIN_DI_SASI
+
 def get_x_t_for_n_classes(X,t): 
 
     t = np.array(t)

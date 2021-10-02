@@ -277,7 +277,6 @@ class ConvolutionalNet:
     def sim(self, X):
         pred_values = list()
         X = utility.convert_to_cnn_input(X, self.MNIST_IMAGE_SIZE)
-        print('x in sim: ',X.shape)
 
         n_instances = X.shape[0]
         for i in range(n_instances) :

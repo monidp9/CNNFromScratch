@@ -459,14 +459,15 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
                     column_start = j
                     column_finish = column_start + net.POOLING_SIZE
 
-                    node_region = conv_fv[d, row_start:row_finish, column_start:column_finish]
+                    nodes_region = conv_fv[d, row_start:row_finish, column_start:column_finish]
                     delta_region = layer_conv_delta[d, row_start:row_finish, column_start:column_finish]
 
-                    max_node = node_region.max()
+                    max_node = nodes_region.max()
+                    max_node = act_fun(max_node)
 
-                    for r in range(node_region.shape[0]):
-                        for c in range(node_region.shape[1]):
-                            node = node_region[r, c]
+                    for r in range(nodes_region.shape[0]):
+                        for c in range(nodes_region.shape[1]):
+                            node = nodes_region[r, c]
                             node = act_fun(node)
                             if node == max_node:
                                 delta_region[r, c] = layer_pooling_delta[d, row, column]

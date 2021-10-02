@@ -118,7 +118,7 @@ def get_mnist_data(data):
 
 def get_mnist_labels(labels):
     labels = np.array(labels)
-    one_hot_labels = np.zeros((10, labels.shape[0]))
+    one_hot_labels = np.zeros((10, labels.shape[0]), dtype=int)
 
     for n in range(labels.shape[0]):
         label = labels[n]

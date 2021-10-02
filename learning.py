@@ -459,19 +459,17 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
         layer_pooling_delta = pooling_delta[l]
         layer_conv_delta = conv_delta[l]
 
-        # fare una costante in convolutional_net
-        pooling_stride = 3
         row, column = 0, 0
         depth, n_rows, n_columns = conv_fv.shape[0], conv_fv.shape[1], conv_fv.shape[2]
 
         for d in range(depth):
-            for i in range(0, n_rows - 1, pooling_stride):
+            for i in range(0, n_rows - 1, net.POOLING_SIZE):
                 row_start = i
-                row_finish = row_start + pooling_stride
+                row_finish = row_start + net.POOLING_SIZE
 
-                for j in range(0, n_columns -1 , pooling_stride):
+                for j in range(0, n_columns -1 , net.POOLING_SIZE):
                     column_start = j
-                    column_finish = column_start + pooling_stride
+                    column_finish = column_start + net.POOLING_SIZE
 
                     node_region = conv_fv[d, row_start:row_finish, column_start:column_finish]
                     delta_region = layer_conv_delta[d, row_start:row_finish, column_start:column_finish]
@@ -486,8 +484,8 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
                                 delta_region[r, c] = layer_pooling_delta[d, row, column]
 
                     column += 1
-                row += 1
                 column = 0
+                row += 1
             row = 0
 
     return conv_delta

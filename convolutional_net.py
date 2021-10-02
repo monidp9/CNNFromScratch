@@ -11,15 +11,16 @@ class ConvolutionalNet:
         self.n_input_nodes = 784        # dipende dal dataset: 784
         self.n_output_nodes = 5        # dipende dal dataset: 10
 
+        self.n_fc_layers = 2
         self.n_cv_layers = n_cv_layers
         self.n_kernels_per_layer = n_kernels_per_layer.copy()
 
         self.CONV_ACT_FUN_CODE = 1
         self.MNIST_IMAGE_SIZE = 28
         self.KERNEL_SIZE = 3
+        self.POOLING_SIZE = 2
         self.STRIDE = 1
         self.PADDING = 1
-        self.n_fc_layers = 2
 
         self.act_fun_codes_per_layer = act_fun_codes.copy()
         self.nodes_per_layer = list()
@@ -67,6 +68,7 @@ class ConvolutionalNet:
     def get_n_nodes_feature_volume(self, n_conv_layer):
         W = self.MNIST_IMAGE_SIZE
         F = self.KERNEL_SIZE
+        Fp = self.POOLING_SIZE
         P = self.PADDING
         S = self.STRIDE
 
@@ -74,10 +76,10 @@ class ConvolutionalNet:
             # output operazione convoluzione
             output_conv_op = round((W - F + 2*P) / S) + 1
             # output operazione max pooling
-            output_max_pooling_op = round((output_conv_op - F) / F) + 1
+            output_max_pooling_op = round((output_conv_op - Fp) / Fp) + 1
             W = output_max_pooling_op
 
-        n_nodes = np.power(W,2)
+        n_nodes = np.power(W, 2)
         n_nodes = n_nodes * self.n_kernels_per_layer[n_conv_layer-1]
 
         return n_nodes
@@ -85,6 +87,7 @@ class ConvolutionalNet:
     def get_n_nodes_feature_volume_pre_pooling(self, n_conv_layer):
         W = self.MNIST_IMAGE_SIZE
         F = self.KERNEL_SIZE
+        Fp = self.POOLING_SIZE
         P = self.PADDING
         S = self.STRIDE
 
@@ -93,7 +96,7 @@ class ConvolutionalNet:
                 # output operazione convoluzione
                 output_conv_op = round((W - F + 2*P) / S) + 1
                 # output operazione max pooling
-                output_max_pooling_op = round((output_conv_op - F) / F) + 1
+                output_max_pooling_op = round((output_conv_op - Fp) / Fp) + 1
                 W = output_max_pooling_op
             else:
                 output_conv_op = round((W - F + 2*P) / S) + 1
@@ -237,7 +240,7 @@ class ConvolutionalNet:
 
             # teoricamente bisognerebbe applicare la funzione di attivazione che in questo
             # caso è la funzione identità quindi non viene considerata
-            pooled_x = self.__max_pooling(output, self.KERNEL_SIZE)
+            pooled_x = self.__max_pooling(output, self.POOLING_SIZE)
 
             cv_outputs.append(pooled_x)
 
@@ -259,6 +262,7 @@ class ConvolutionalNet:
 
             act_fun = fun.activation_functions[self.act_fun_codes_per_layer[i]]
             output = act_fun(layer_input)
+
             fc_layers_outputs.append(output)
 
         return fc_layers_inputs, fc_layers_outputs

@@ -322,7 +322,7 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val, delta_min, delta_ma
                     total_fc_bias_deriv[i] = np.add(total_fc_bias_deriv[i], fc_bias_deriv[i])
 
         str_rprop.set_deriv(total_kernels_deriv, total_weights_deriv, total_cv_bias_deriv, total_fc_bias_deriv)
-        net = RPROP(net, str_rprop, eta_min, eta_max, epoch)
+        net, str_rprop= RPROP(net, str_rprop, eta_min, eta_max, epoch, delta_min, delta_max)
 
         y_train = net.sim(X_train)
         y_val = net.sim(X_val)

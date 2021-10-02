@@ -8,7 +8,7 @@ from matplotlib.pyplot import prism
 
 
 DELTA_MAX = 50
-DELTA_MIN = 1e-06
+DELTA_MIN = 0
 
 # -----------------------------------MULTILAYER NEURAL NETWORK -----------------------------------
 
@@ -135,25 +135,27 @@ class struct_per_RPROP:
         self.__initialize_delta(net)
 
     def __initialize_delta(self, net) :
-
-        dim_kernels_per_layer = 1 # primo kernel applicato su input ha dimensione 1
+        # primo kernel applicato su input ha dimensione 1
+        dim_kernels_per_layer = 1
+        mu = 0
+        sigma = 0.1
         for i in range(net.n_cv_layers) :
-            self.kernels_delta.append(np.random.normal(size=(net.n_kernels_per_layer[i], dim_kernels_per_layer,
-                                                                net.KERNEL_SIZE, net.KERNEL_SIZE)))
+            self.kernels_delta.append(np.random.normal(mu, sigma, size=(net.n_kernels_per_layer[i], dim_kernels_per_layer,
+                                                                        net.KERNEL_SIZE, net.KERNEL_SIZE)))
 
             dim_kernels_per_layer = net.n_kernels_per_layer[i]
 
             n_cv_bias_per_layer = net.get_n_nodes_feature_volume_pre_pooling(i)
-            self.cv_bias_delta.append(np.random.normal(size=(n_cv_bias_per_layer,1)))
+            self.cv_bias_delta.append(np.random.normal(mu, sigma, size=(n_cv_bias_per_layer,1)))
 
         for i in range(net.n_fc_layers):
             if i == 0:
                 n_nodes_input = net.get_n_nodes_feature_volume(net.n_cv_layers)
-                self.weights_delta.append(np.random.normal(size=(net.nodes_per_layer[i],
-                                                        n_nodes_input)))
+                self.weights_delta.append(np.random.normal(mu, sigma, size=(net.nodes_per_layer[i],
+                                                                            n_nodes_input)))
             else:
-                self.weights_delta.append(np.random.normal(size=(net.nodes_per_layer[i],
-                                                        net.nodes_per_layer[i-1])))
+                self.weights_delta.append(np.random.normal(mu, sigma, size=(net.nodes_per_layer[i],
+                                                                            net.nodes_per_layer[i-1])))
 
             self.fc_bias_delta.append(np.random.normal(size=(net.nodes_per_layer[i], 1)))
 
@@ -245,9 +247,19 @@ def __fc_RPROP(net, str_rprop, eta_n, eta_p, epoch, delta_min, delta_max) :
 
     return net, str_rprop
 
-def RPROP (net, str_rprop, eta_n, eta_p, epoch, delta_min, delta_max):   # serve restituire la rete in ogni funzione(?)
+def conv_standard_gradient_descent(net, str_rprop, eta):
+    for i in range(net.n_cv_layers):
+        net.kernels[i] = net.kernels[i] - (eta * str_rprop.kernels_deriv[i])
+        net.cv_bias[i] = net.cv_bias[i] - (eta * str_rprop.cv_bias_deriv[i])
 
-    if epoch==0:
+    for i in range(net.n_fc_layers):
+        net.weights[i] = net.weights[i] - (eta * str_rprop.weights_deriv[i])
+        net.fc_bias[i] = net.fc_bias[i] - (eta * str_rprop.fc_bias_deriv[i])
+
+    return net
+
+def RPROP (net, str_rprop, eta_n, eta_p, epoch, delta_min, delta_max):   # serve restituire la rete in ogni funzione(?)
+    if epoch == 0:
         net = conv_standard_gradient_descent(net, str_rprop, eta_n)
     else :
         net, str_rprop = __cv_RPROP(net, str_rprop, eta_n, eta_p, epoch, delta_min, delta_max)
@@ -286,7 +298,6 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val, delta_min, delta_ma
 
     for epoch in range(n_epochs):
         # somma delle derivate
-        # MOTIVO PRINCIPALE DI RALLENTAMENTO DEL LEARNING
         for n in range(n_instances):
             # si estrapolano singole istanze come vettori colonna
             x = X_train[:, n].reshape(-1, 1)
@@ -310,8 +321,8 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val, delta_min, delta_ma
                     total_weights_deriv[i] = np.add(total_weights_deriv[i], weights_deriv[i])
                     total_fc_bias_deriv[i] = np.add(total_fc_bias_deriv[i], fc_bias_deriv[i])
 
-        str_rprop.set_deriv(total_kernels_deriv,total_weights_deriv,total_cv_bias_deriv,total_fc_bias_deriv)
-        net, str_rprop = RPROP(net, str_rprop, eta_min, eta_max, epoch, delta_min, delta_max)
+        str_rprop.set_deriv(total_kernels_deriv, total_weights_deriv, total_cv_bias_deriv, total_fc_bias_deriv)
+        net = RPROP(net, str_rprop, eta_min, eta_max, epoch)
 
         y_train = net.sim(X_train)
         y_val = net.sim(X_val)
@@ -336,18 +347,6 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val, delta_min, delta_ma
 
 
     return best_net
-
-def conv_standard_gradient_descent(net, str_rprop, eta):
-
-    for i in range(net.n_cv_layers):
-        net.kernels[i] = net.kernels[i] - (eta * str_rprop.kernels_deriv[i])
-        net.cv_bias[i] = net.cv_bias[i] - (eta * str_rprop.cv_bias_deriv[i])
-
-    for i in range(net.n_fc_layers):
-        net.weights[i] = net.weights[i] - (eta * str_rprop.weights_deriv[i])
-        net.fc_bias[i] = net.fc_bias[i] - (eta * str_rprop.fc_bias_deriv[i])
-
-    return net
 
 # ----------------------------------- monty
 
@@ -403,6 +402,7 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
     act_fun = fun.activation_functions[net.CONV_ACT_FUN_CODE]
 
     # calcolo dei delta
+    act_fun = fun.activation_functions[net.CONV_ACT_FUN_CODE]
     for l in range(net.n_cv_layers - 1, -1, -1):
         conv_fv = cv_inputs[l]
         pooling_fv = cv_outputs[l]
@@ -437,7 +437,7 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
                                    (i, j - 1),     (i, j),     (i, j + 1)]
 
                         for r, c in indexes:
-                            if (r >= 0 and c >=0) and (r < n_rows and c < n_columns):
+                            if (r >= 0 and c >= 0) and (r < n_rows and c < n_columns):
                                 for k in range(n_kernels):
                                     kernel = layer_kernels[k]
                                     delta_values.append(succ_conv_delta[k, r, c])
@@ -458,21 +458,37 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
 
         layer_pooling_delta = pooling_delta[l]
         layer_conv_delta = conv_delta[l]
-        for d in range(conv_fv.shape[0]):
-            for i in range(conv_fv.shape[1]):
-                for j in range(conv_fv.shape[2]):
-                    node = conv_fv[d, i, j]
-                    node = act_fun(node)
-                    node_delta = 0
 
-                    index = np.where(node == pooling_fv)
-                    is_max = len(index[0]) > 0
+        # fare una costante in convolutional_net
+        pooling_stride = 3
+        row, column = 0, 0
+        depth, n_rows, n_columns = conv_fv.shape[0], conv_fv.shape[1], conv_fv.shape[2]
 
-                    if is_max:
-                        # calcolo delta nel layer di pooling
-                        node_delta = layer_pooling_delta[index][0]
+        for d in range(depth):
+            for i in range(0, n_rows - 1, pooling_stride):
+                row_start = i
+                row_finish = row_start + pooling_stride
 
-                    layer_conv_delta[d, i, j] = node_delta
+                for j in range(0, n_columns -1 , pooling_stride):
+                    column_start = j
+                    column_finish = column_start + pooling_stride
+
+                    node_region = conv_fv[d, row_start:row_finish, column_start:column_finish]
+                    delta_region = layer_conv_delta[d, row_start:row_finish, column_start:column_finish]
+
+                    max_node = node_region.max()
+
+                    for r in range(node_region.shape[0]):
+                        for c in range(node_region.shape[1]):
+                            node = node_region[r, c]
+                            node = act_fun(node)
+                            if node == max_node:
+                                delta_region[r, c] = layer_pooling_delta[d, row, column]
+
+                    column += 1
+                row += 1
+                column = 0
+            row = 0
 
     return conv_delta
 

@@ -28,7 +28,7 @@ def relu_deriv(x):
 def sum_of_squares(y, t):
     return 0.5 * np.sum(np.power(y - t, 2))
 
-def cross_entropy(y, t, epsilon=1e-12):
+def cross_entropy(y, t, epsilon=1e-15):
     y = np.clip(y, epsilon, 1. - epsilon)
     return - np.sum(t * np.log(y))
 

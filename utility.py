@@ -156,7 +156,7 @@ def get_random_dataset(X, t, n_samples_considered=10000):
 
 def get_scaled_data(X):
     X = X.astype('float32')
-    X = X / 255
+    X = X / 255.0
     return X 
 
 def train_test_split(X, t, test_size=0.25):

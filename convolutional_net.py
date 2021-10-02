@@ -6,11 +6,10 @@ import functions as fun
 import utility
 
 
-
 class ConvolutionalNet:
     def __init__(self, n_cv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code):
         self.n_input_nodes = 784        # dipende dal dataset: 784
-        self.n_output_nodes = 2        # dipende dal dataset: 10
+        self.n_output_nodes = 5        # dipende dal dataset: 10
 
         self.n_cv_layers = n_cv_layers
         self.n_kernels_per_layer = n_kernels_per_layer.copy()

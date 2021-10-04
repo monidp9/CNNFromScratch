@@ -62,7 +62,7 @@ class MultilayerNet:
         return output
 
     def print_config(self):
-        print('\nYOUR MULTILAYER NETWORK')
+        print('\n\n\nYOUR MULTILAYER NETWORK')
         print('-'*100)
 
         print("• input layer: {:>11} nodes".format(self.n_input_nodes))

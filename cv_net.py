@@ -291,7 +291,7 @@ class ConvolutionalNet:
         return pred_values
 
     def print_config(self):
-        print('\nYOUR CONVOLUTIONAL NETWORK')
+        print('\n\n\nYOUR CONVOLUTIONAL NETWORK')
         print('-'*100)
 
         print("• input layer: {:>12} nodes".format(self.n_input_nodes))

@@ -1,4 +1,3 @@
-from functions import identity
 import numpy as np
 import sys
 import os
@@ -22,7 +21,7 @@ def check_int_input(value, min_value,max_value):
     if not value.isnumeric() or (not int(value) >= min_value or not int(value) <= max_value) :
         raise ValueError
 
-def get_int_input(string, min_value, max_value=sys.maxsize) :
+def get_int_input(string, min_value=0, max_value=sys.maxsize) :
     flag = False
     value = None
     while not flag :
@@ -35,13 +34,18 @@ def get_int_input(string, min_value, max_value=sys.maxsize) :
 
     return int(value)
 
-def get_configuration_multilayer_net():
+def is_standard_conf():
+    print('\n\n')
+    choice =  get_int_input('Do you want to use the default configuration? (Y=1 / N=0): ',0,1)
+    return choice
+
+def get_conf_ml_net():
     print('\n\n\n')
     print('-'*40, 'NEURAL NETWORK PROJECT', '-'*40, '\n'
      '\t\t\t\t creation of a multilayer neural network\n\n\n')
 
 
-    n_hidden_layers = get_int_input('define the number of hidden layers (min value = 1): ',1)
+    n_hidden_layers = get_int_input('define the number of hidden layers (min value = 1): ',min_value=1)
 
     print('\nfor each hidden layer define the number of internal nodes and the activation functions.')
 
@@ -72,20 +76,20 @@ def get_configuration_multilayer_net():
 
     return n_hidden_layers, n_hidden_nodes_per_layer, act_fun_codes, error_fun_code
 
-def get_configuration_conv_net():
+def get_conf_cv_net():
     print('\n\n\n')
     print('-'*40, 'NEURAL NETWORK PROJECT', '-'*40, '\n'
      '\t\t\t\t creation of a convolutional neural network\n\n\n')
 
 
-    n_conv_layers = get_int_input('define the number of convolutional layers (min value = 1): ',1)
+    n_cv_layers = get_int_input('define the number of convolutional layers (min value = 1): ',min_value=1)
 
     print('\nfor each convolutional layer define the number of kernels\n')
 
     n_kernels_per_layer = list()
     act_fun_codes = list()
 
-    for i in range(n_conv_layers):
+    for i in range(n_cv_layers):
         print('convlutional layer', i+1, ':')
 
         n_kernels= get_int_input('-  number of kernels: ',1)
@@ -98,7 +102,7 @@ def get_configuration_conv_net():
     act_fun_code = get_int_input('-  choose activaction function for hidden layer: ',1, n_activation_functions) - 1
     act_fun_codes.append(act_fun_code)
 
-    n_hiddden_nodes= get_int_input('-  number of nodes: ',1)
+    n_hidden_nodes= get_int_input('-  number of nodes: ',1)
 
     print('\noutput layer :')
     act_fun_code = get_int_input('-  choose activaction function for output layer: ',1, n_activation_functions) - 1
@@ -109,7 +113,7 @@ def get_configuration_conv_net():
 
     os.system('clear')
 
-    return n_conv_layers, n_kernels_per_layer, n_hiddden_nodes, act_fun_codes, error_fun_code
+    return n_cv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code
 
 def get_mnist_data(data):
     data = np.array(data)
@@ -122,16 +126,6 @@ def get_mnist_labels(labels):
 
     for n in range(labels.shape[0]):
         label = labels[n]
-        one_hot_labels[label][n] = 1
-
-    return one_hot_labels
-
-def get_iris_labels(labels):
-    labels = np.array(labels)
-    one_hot_labels = np.zeros((3, labels.shape[0]))
-
-    for n in range(labels.shape[0]):
-        label = labels[n] - 1
         one_hot_labels[label][n] = 1
 
     return one_hot_labels

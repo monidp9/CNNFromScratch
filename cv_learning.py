@@ -1,12 +1,12 @@
 import functions as fun
 import numpy as np
-import utility
+import utility as utl 
 from tqdm import tqdm
 from copy import deepcopy
 
 # --------------------------------------------------------------    RPROP    ---------------------------------------------------------
 
-class struct_per_RPROP:
+class rprop_info:
     def __init__(self, net):
         self.kernels_deriv = list()
         self.weights_deriv = list()
@@ -176,7 +176,7 @@ def batch_learning(net, X_train, t_train, X_val, t_val,
     tot_weights_deriv, tot_fc_bias_deriv, tot_cv_bias_deriv, tot_kernels_deriv = None, None, None, None
 
     n_instances = X_train.shape[1]
-    str_rprop = struct_per_RPROP(net)
+    str_rprop = rprop_info(net)
 
     for epoch in range(n_epochs):
        
@@ -186,7 +186,7 @@ def batch_learning(net, X_train, t_train, X_val, t_val,
             x = X_train[:, n].reshape(-1, 1)
             t = t_train[:, n].reshape(-1, 1)
 
-            weights_deriv, fc_bias_deriv, kernels_deriv, cv_bias_deriv = back_propagation(net, x, t)
+            weights_deriv, fc_bias_deriv, kernels_deriv, cv_bias_deriv = __back_propagation(net, x, t)
 
             if n == 0:
                 tot_weights_deriv = weights_deriv
@@ -375,7 +375,7 @@ def __get_fc_weights_bias_deriv(net, x, fc_delta, fc_outputs):
     return weights_deriv, bias_deriv
 
 def __get_cv_weights_bias_deriv(net, x, cv_delta, cv_outputs):
-    x = utility.convert_to_cnn_input(x, net.MNIST_IMAGE_SIZE)
+    x = utl.convert_to_cnn_input(x, net.MNIST_IMAGE_SIZE)
 
     kernels_deriv = list()
     bias_deriv = list()
@@ -450,7 +450,7 @@ def __get_cv_weights_bias_deriv(net, x, cv_delta, cv_outputs):
     # le derivate sono liste aventi una matrice quadrimensionale per ogni layer
     return kernels_deriv, bias_deriv
 
-def back_propagation(net, x, t):
+def __back_propagation(net, x, t):
     # x: singola istanza
     cv_inputs, cv_outputs, fc_inputs, fc_outputs = net.forward_step(x)
 

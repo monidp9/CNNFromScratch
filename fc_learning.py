@@ -36,7 +36,7 @@ def __get_weights_bias_deriv(net, x, delta, layers_output) :
 
     return weights_deriv, bias_deriv
 
-def standard_gradient_descent(net, weights_deriv, bias_deriv, eta):
+def __standard_gradient_descent(net, weights_deriv, bias_deriv, eta):
     for i in range(net.n_layers):
         net.weights[i] = net.weights[i] - (eta * weights_deriv[i])
         net.bias[i] = net.bias[i] - (eta * bias_deriv[i])
@@ -59,7 +59,7 @@ def batch_learning(net, X_train, t_train, X_val, t_val, eta = 0.001, n_epochs = 
             # si estrapolano singole istanze come vettori colonna
             x = X_train[:, n].reshape(-1, 1)
             t = t_train[:, n].reshape(-1, 1)
-            weights_deriv, bias_deriv = back_propagation(net, x, t)
+            weights_deriv, bias_deriv = __back_propagation(net, x, t)
 
             if n == 0:
                 tot_weights_deriv = deepcopy(weights_deriv)
@@ -69,7 +69,7 @@ def batch_learning(net, X_train, t_train, X_val, t_val, eta = 0.001, n_epochs = 
                     tot_weights_deriv[i] = np.add(tot_weights_deriv[i], weights_deriv[i])
                     tot_bias_deriv[i] = np.add(tot_bias_deriv[i], bias_deriv[i])
 
-        net = standard_gradient_descent(net, tot_weights_deriv, tot_bias_deriv, eta)
+        net = __standard_gradient_descent(net, tot_weights_deriv, tot_bias_deriv, eta)
 
         y_train = net.sim(X_train)
         y_val = net.sim(X_val)
@@ -89,7 +89,7 @@ def batch_learning(net, X_train, t_train, X_val, t_val, eta = 0.001, n_epochs = 
 
     return best_net
 
-def back_propagation(net, x, t):
+def __back_propagation(net, x, t):
     # x: singola istanza
     layers_input, layers_output = net.forward_step(x)
     delta = __get_delta(net, t, layers_input, layers_output)

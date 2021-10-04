@@ -1,13 +1,15 @@
+from math import sqrt
 from copy import deepcopy
+import matplotlib.pyplot as plt
 import numpy as np
 import functions as fun
-import utility as utl
+import utility
 
 
 class ConvolutionalNet:
     def __init__(self, n_cv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code):
-        self.n_input_nodes = 784 # dipende dal dataset: mnist_in = 784
-        self.n_output_nodes = 10 # dipende dal dataset: mnist_out = 10
+        self.n_input_nodes = 784
+        self.n_output_nodes = 10
 
         self.n_fc_layers = 2
         self.n_cv_layers = n_cv_layers

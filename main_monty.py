@@ -5,7 +5,6 @@ import functions as fun
 import random
 
 from copy import deepcopy
-from net import Net
 from mnist import MNIST
 from learning import conv_batch_learning
 from convolutional_net import ConvolutionalNet

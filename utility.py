@@ -209,3 +209,14 @@ def get_metric_value(y, t, metric):
 
     raise ValueError()
 
+def print_result(y_test, t_test):
+    accuracy = get_metric_value(y_test, t_test, 'accuracy')
+    precision = get_metric_value(y_test, t_test, 'precision')
+    recall = get_metric_value(y_test, t_test, 'recall')
+    f1 = get_metric_value(y_test, t_test, 'f1')
+
+    print('\n')
+    print('-'*63)
+    print('Performance on test set\n')
+    print('     accuracy: {:.2f} - precision: {:.2f} - recall: {:.2f} - f1: {:.2f}\n\n'.format(accuracy, precision, recall, f1))
+

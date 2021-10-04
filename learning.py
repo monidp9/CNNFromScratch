@@ -1,4 +1,4 @@
-import net
+import multilayer_net
 import functions as fun
 import numpy as np
 import utility
@@ -13,7 +13,7 @@ DELTA_MIN = 1e-06
 
 # -----------------------------------MULTILAYER NEURAL NETWORK -----------------------------------
 
-def __get_delta(net, t, layer_input, layer_output) :
+def __get_delta(net, t, layers_input, layers_output) :
     delta = []
 
     for i in range(net.n_layers):
@@ -25,15 +25,15 @@ def __get_delta(net, t, layer_input, layer_output) :
         if i == net.n_layers-1 :
             # calcolo delta nodi di output
             error_fun_deriv = fun.error_functions_deriv[net.error_fun_code]
-            delta[i] = act_fun_deriv(layer_input[i]) *  error_fun_deriv(layer_output[i], t)
+            delta[i] = act_fun_deriv(layers_input[i]) *  error_fun_deriv(layers_output[i], t)
 
         else :
             # calcolo delta nodi interni
-            delta[i] = act_fun_deriv(layer_input[i]) *  np.dot(np.transpose(net.weights[i+1]), delta[i+1])
+            delta[i] = act_fun_deriv(layers_input[i]) *  np.dot(np.transpose(net.weights[i+1]), delta[i+1])
 
     return delta
 
-def __get_weights_bias_deriv(net, x, delta, layer_output) :
+def __get_weights_bias_deriv(net, x, delta, layers_output) :
     weights_deriv = []
     bias_deriv = []
 
@@ -41,7 +41,7 @@ def __get_weights_bias_deriv(net, x, delta, layer_output) :
         if i == 0 :
             weights_deriv.append(np.dot(delta[i], np.transpose(x)))
         else :
-            weights_deriv.append(np.dot(delta[i], np.transpose(layer_output[i-1])))
+            weights_deriv.append(np.dot(delta[i], np.transpose(layers_output[i-1])))
         bias_deriv.append(delta[i])
 
     return weights_deriv, bias_deriv
@@ -53,7 +53,7 @@ def standard_gradient_descent(net, weights_deriv, bias_deriv, eta):
     return net
 
 def batch_learning(net, X_train, t_train, X_val, t_val):
-    eta = 0.0001
+    eta = 0.001
     n_epochs = 500
 
     train_errors = list()
@@ -108,9 +108,9 @@ def batch_learning(net, X_train, t_train, X_val, t_val):
 
 def back_propagation(net, x, t):
     # x: singola istanza
-    layer_input, layer_output = net.forward_step(x)
-    delta = __get_delta(net, t, layer_input, layer_output)
-    weights_deriv, bias_deriv = __get_weights_bias_deriv(net, x, delta, layer_output)
+    layers_input, layers_output = net.forward_step(x)
+    delta = __get_delta(net, t, layers_input, layers_output)
+    weights_deriv, bias_deriv = __get_weights_bias_deriv(net, x, delta, layers_output)
 
     return weights_deriv, bias_deriv
 

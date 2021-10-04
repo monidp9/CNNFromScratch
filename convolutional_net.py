@@ -1,15 +1,13 @@
-from math import sqrt
 from copy import deepcopy
-import matplotlib.pyplot as plt
 import numpy as np
 import functions as fun
-import utility
+import utility as utl
 
 
 class ConvolutionalNet:
     def __init__(self, n_cv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code):
-        self.n_input_nodes = 784
-        self.n_output_nodes = 10
+        self.n_input_nodes = 784 # dipende dal dataset: mnist_in = 784
+        self.n_output_nodes = 10 # dipende dal dataset: mnist_out = 10
 
         self.n_fc_layers = 2
         self.n_cv_layers = n_cv_layers
@@ -23,11 +21,10 @@ class ConvolutionalNet:
         self.PADDING = 1
 
         self.act_fun_codes_per_layer = act_fun_codes.copy()
-        self.nodes_per_layer = list()
-        self.nodes_per_layer.append(n_hidden_nodes)
-        self.nodes_per_layer.append(self.n_output_nodes)
-
         self.error_fun_code = error_fun_code
+
+        self.nodes_per_layer = list()
+        self.nodes_per_layer.extend([n_hidden_nodes] + [self.n_output_nodes])
 
         self.weights = list()
         self.fc_bias = list()
@@ -38,7 +35,6 @@ class ConvolutionalNet:
         self.__initialize_weights_and_fc_bias()
 
     def __initialize_kernels_and_cv_bias(self):
-        # il primo kernel applicato su input ha dimensione 1
         dim_kernels_per_layer = 1 
         mu, sigma = 0, 0.1
 
@@ -73,14 +69,11 @@ class ConvolutionalNet:
         S = self.STRIDE
 
         for i in range(n_conv_layer) :
-            # output operazione convoluzione
-            output_conv_op = round((W - F + 2*P) / S) + 1
-            # output operazione max pooling
-            output_max_pooling_op = round((output_conv_op - Fp) / Fp) + 1
-            W = output_max_pooling_op
+            conv_op_output = round((W - F + 2*P) / S) + 1
+            max_pooling_op_output= round((conv_op_output - Fp) / Fp) + 1
+            W = max_pooling_op_output
 
-        n_nodes = np.power(W, 2)
-        n_nodes = n_nodes * self.n_kernels_per_layer[n_conv_layer-1]
+        n_nodes = np.power(W, 2) * self.n_kernels_per_layer[n_conv_layer-1]
 
         return n_nodes
 
@@ -93,17 +86,14 @@ class ConvolutionalNet:
 
         for i in range(n_conv_layer + 1) :
             if i != n_conv_layer:
-                # output operazione convoluzione
-                output_conv_op = round((W - F + 2*P) / S) + 1
-                # output operazione max pooling
-                output_max_pooling_op = round((output_conv_op - Fp) / Fp) + 1
-                W = output_max_pooling_op
+                conv_op_output = round((W - F + 2*P) / S) + 1
+                max_pooling_op_output = round((conv_op_output - Fp) / Fp) + 1
+                W = max_pooling_op_output
             else:
-                output_conv_op = round((W - F + 2*P) / S) + 1
-                W = output_conv_op
+                conv_op_output = round((W - F + 2*P) / S) + 1
+                W = conv_op_output
 
-        n_nodes = np.power(W, 2)
-        n_nodes = n_nodes * self.n_kernels_per_layer[n_conv_layer]
+        n_nodes = np.power(W, 2) * self.n_kernels_per_layer[n_conv_layer]
 
         return n_nodes
 
@@ -268,12 +258,10 @@ class ConvolutionalNet:
         return fc_layers_inputs, fc_layers_outputs
 
     def forward_step(self, x):
-        x = utility.convert_to_cnn_input(x, self.MNIST_IMAGE_SIZE)
+        x = utl.convert_to_cnn_input(x, self.MNIST_IMAGE_SIZE)
 
         cv_inputs, cv_outputs = self.__cv_forward_step(x)
-
-        input_for_fc = cv_outputs[self.n_cv_layers - 1].flatten()
-        input_for_fc = input_for_fc.reshape(-1, 1)
+        input_for_fc = cv_outputs[self.n_cv_layers - 1].flatten().reshape(-1, 1) 
 
         fc_inputs, fc_outputs = self.__fc_forward_step(input_for_fc)
 
@@ -281,11 +269,10 @@ class ConvolutionalNet:
 
     def sim(self, X):
         pred_values = list()
-        X = utility.convert_to_cnn_input(X, self.MNIST_IMAGE_SIZE)
-
+        X = utl.convert_to_cnn_input(X, self.MNIST_IMAGE_SIZE)
         n_instances = X.shape[0]
-        for i in range(n_instances) :
 
+        for i in range(n_instances) :
             _, cv_outputs = self.__cv_forward_step(X[i])
 
             input_for_fc = cv_outputs[self.n_cv_layers - 1].flatten()
@@ -296,7 +283,7 @@ class ConvolutionalNet:
             pred_values.append(fc_outputs[self.n_fc_layers - 1])
 
         pred_values = np.array(pred_values)
-        pred_values = pred_values.squeeze()
+        pred_values = pred_values.squeeze() 
         pred_values = pred_values.transpose()
         
         return pred_values

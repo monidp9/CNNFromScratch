@@ -28,13 +28,17 @@ def relu_deriv(x):
 def sum_of_squares(y, t):
     return 0.5 * np.sum(np.power(y - t, 2))
 
-def cross_entropy(y, t, epsilon=1e-12):
+def cross_entropy(y, t, epsilon=1e-15):
     y = np.clip(y, epsilon, 1. - epsilon)
     return - np.sum(t * np.log(y))
 
 def cross_entropy_softmax(y, t):
     softmax_y = softmax(y, axis=0)
+    # print('Output rete (softmax): \n ', softmax_y)
+    # print('Valore vero: \n', t)
+    # print('errore: ', cross_entropy(softmax_y, t))
     return cross_entropy(softmax_y, t)
+
 
 # derivate funzioni di errore
 def sum_of_squares_deriv(y, t):

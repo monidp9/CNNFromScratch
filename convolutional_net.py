@@ -8,8 +8,8 @@ import utility
 
 class ConvolutionalNet:
     def __init__(self, n_cv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code):
-        self.n_input_nodes = 784        # dipende dal dataset: 784
-        self.n_output_nodes = 5        # dipende dal dataset: 10
+        self.n_input_nodes = 784
+        self.n_output_nodes = 10
 
         self.n_fc_layers = 2
         self.n_cv_layers = n_cv_layers
@@ -144,7 +144,6 @@ class ConvolutionalNet:
 
         return padded_feature_volume
 
-    # creare il bias in forma matriciale e non come vettore colonna
     def __convolution(self, feature_volume, layer_kernels, bias):
         # layer_kernels: matrice quadrimensionale del layer
 
@@ -155,7 +154,6 @@ class ConvolutionalNet:
         n_rows = feature_volume.shape[1]
         n_columns = feature_volume.shape[2]
 
-        # convolution
         b_index = 0
         n_kernels = layer_kernels.shape[0]
         feature_map = list()
@@ -189,7 +187,9 @@ class ConvolutionalNet:
             conv_feature_volume.append(deepcopy(feature_map))
             feature_map[:] = []
 
-        return np.array(conv_feature_volume)
+        conv_feature_volume = np.array(conv_feature_volume)
+        conv_feature_volume = np.round(conv_feature_volume, 3)
+        return conv_feature_volume
 
     def __max_pooling(self, feature_volume, region_size):
         depth = feature_volume.shape[0]

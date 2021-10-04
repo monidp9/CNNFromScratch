@@ -34,7 +34,11 @@ def cross_entropy(y, t, epsilon=1e-15):
 
 def cross_entropy_softmax(y, t):
     softmax_y = softmax(y, axis=0)
+    # print('Output rete (softmax): \n ', softmax_y)
+    # print('Valore vero: \n', t)
+    # print('errore: ', cross_entropy(softmax_y, t))
     return cross_entropy(softmax_y, t)
+
 
 # derivate funzioni di errore
 def sum_of_squares_deriv(y, t):

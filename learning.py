@@ -3,9 +3,10 @@ import functions as fun
 import numpy as np
 import utility
 import time
+import sys
 
+from tqdm import tqdm
 from copy import deepcopy
-from matplotlib.pyplot import prism
 
 
 DELTA_MAX = 50
@@ -299,7 +300,8 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
 
     for epoch in range(n_epochs):
         # somma delle derivate
-        for n in range(n_instances):
+        print('Epoch {} / {}'.format(epoch + 1, n_epochs))
+        for n in tqdm(range(n_instances)):
             # si estrapolano singole istanze come vettori colonna
             x = X_train[:, n].reshape(-1, 1)
             t = t_train[:, n].reshape(-1, 1)
@@ -318,7 +320,7 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
                     total_cv_bias_deriv[i] = np.add(total_cv_bias_deriv[i], cv_bias_deriv[i])
 
 
-                for i in range(net.n_fc_layers) :
+                for i in range(net.n_fc_layers):
                     total_weights_deriv[i] = np.add(total_weights_deriv[i], weights_deriv[i])
                     total_fc_bias_deriv[i] = np.add(total_fc_bias_deriv[i], fc_bias_deriv[i])
 
@@ -334,7 +336,7 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
         train_errors.append(train_error)
         val_errors.append(val_error)
 
-        print('epoch {}: train error {:.2f}, val error {:.2f}, acc {:.2f}'.format(epoch, train_error, val_error, fun.accuracy(y_val, t_val)))
+        print('train error: {:.2f} - val error: {:.2f} - accuracy: {:.2f}'.format(train_error, val_error, fun.accuracy(y_val, t_val)))
 
         if val_error < min_error:
             min_error = val_error

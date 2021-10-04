@@ -337,7 +337,11 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
         val_errors.append(val_error)
 
         accuracy = utility.get_metric_value(y_val, t_val, 'accuracy')
-        print('train error: {:.2f} - val error: {:.2f} - accuracy: {:.2f}'.format(train_error, val_error, accuracy))
+        precision = utility.get_metric_value(y_val, t_val, 'precision')
+        recall = utility.get_metric_value(y_val, t_val, 'recall')
+        f1 = utility.get_metric_value(y_val, t_val, 'f1')
+        print('train error: {:.2f} - val error: {:.2f}'.format(train_error, val_error))
+        print('accuracy: {:.2f} - precision: {:.2f} - recall: {:.2f} - f1: {:.2f}'.format(accuracy, precision, recall, f1))
 
         if val_error < min_error:
             min_error = val_error

@@ -3,6 +3,9 @@ import sys
 import os
 
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import f1_score
 
 
 n_activation_functions = 3
@@ -202,4 +205,12 @@ def get_metric_value(y, t, metric):
 
     if metric == 'accuracy':
         return accuracy_score(pred, target)
+    elif metric == 'precision':
+        return precision_score(pred, target, average='macro', zero_division=0)
+    elif metric == 'recall':
+        return recall_score(pred, target, average='macro', zero_division=0)
+    elif metric == 'f1':
+        return f1_score(pred, target, average='macro', zero_division=0)
+
+    raise ValueError()
 

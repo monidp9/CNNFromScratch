@@ -9,7 +9,7 @@ from matplotlib.pyplot import prism
 
 
 DELTA_MAX = 50
-DELTA_MIN = 0
+DELTA_MIN = 1e-06
 
 # -----------------------------------MULTILAYER NEURAL NETWORK -----------------------------------
 

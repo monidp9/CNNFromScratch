@@ -53,7 +53,7 @@ def standard_gradient_descent(net, weights_deriv, bias_deriv, eta):
     return net
 
 def batch_learning(net, X_train, t_train, X_val, t_val):
-    eta = 0.001
+    eta = 0.0001
     n_epochs = 500
 
     train_errors = list()
@@ -136,29 +136,32 @@ class struct_per_RPROP:
         self.__initialize_delta(net)
 
     def __initialize_delta(self, net) :
-        # primo kernel applicato su input ha dimensione 1
-        dim_kernels_per_layer = 1
-        mu = 0
-        sigma = 0.1
+        # primo kernel applicato su input (immagine) ha profondità 1
+        kernel_depth = 1
         for i in range(net.n_cv_layers) :
-            self.kernels_delta.append(np.random.normal(mu, sigma, size=(net.n_kernels_per_layer[i], dim_kernels_per_layer,
-                                                                        net.KERNEL_SIZE, net.KERNEL_SIZE)))
+            n_kernels = net.n_kernels_per_layer[i]
 
-            dim_kernels_per_layer = net.n_kernels_per_layer[i]
+            kernel_delta = np.full((n_kernels, kernel_depth, net.KERNEL_SIZE, net.KERNEL_SIZE), 0.0125)
+            self.kernels_delta.append(kernel_delta)
 
-            n_cv_bias_per_layer = net.get_n_nodes_feature_volume_pre_pooling(i)
-            self.cv_bias_delta.append(np.random.normal(mu, sigma, size=(n_cv_bias_per_layer,1)))
+            kernel_depth = net.n_kernels_per_layer[i]
+            n_nodes_fv = net.get_n_nodes_feature_volume_pre_pooling(i)
+
+            bias_delta = np.full((n_nodes_fv, 1), 0.0125)
+            self.cv_bias_delta.append(bias_delta)
 
         for i in range(net.n_fc_layers):
             if i == 0:
-                n_nodes_input = net.get_n_nodes_feature_volume(net.n_cv_layers)
-                self.weights_delta.append(np.random.normal(mu, sigma, size=(net.nodes_per_layer[i],
-                                                                            n_nodes_input)))
-            else:
-                self.weights_delta.append(np.random.normal(mu, sigma, size=(net.nodes_per_layer[i],
-                                                                            net.nodes_per_layer[i-1])))
+                n_flattened_nodes = net.get_n_nodes_feature_volume(net.n_cv_layers)
 
-            self.fc_bias_delta.append(np.random.uniform(size=(net.nodes_per_layer[i], 1)))
+                weight_delta = np.full((net.nodes_per_layer[i], n_flattened_nodes), 0.0125)
+                self.weights_delta.append(weight_delta)
+            else:
+                weight_delta = np.full((net.nodes_per_layer[i], net.nodes_per_layer[i - 1]), 0.0125)
+                self.weights_delta.append(weight_delta)
+
+            bias_delta = np.full((net.nodes_per_layer[i], 1), 0.0125)
+            self.fc_bias_delta.append(bias_delta)
 
     def set_deriv(self, total_kernels_deriv, total_weights_deriv, total_cv_bias_deriv, total_fc_bias_deriv):
         self.kernels_deriv = total_kernels_deriv
@@ -272,7 +275,7 @@ def RPROP (net, str_rprop, eta_n, eta_p, epoch):   # serve restituire la rete in
     return net
 
 def conv_batch_learning(net, X_train, t_train, X_val, t_val):
-    eta_min = 0.1
+    eta_min = 0.01
     eta_max = 1.2
     n_epochs = 12
 
@@ -304,10 +307,10 @@ def conv_batch_learning(net, X_train, t_train, X_val, t_val):
             weights_deriv, fc_bias_deriv, kernels_deriv, cv_bias_deriv = conv_back_propagation(net, x, t)
 
             if n == 0:
-                total_weights_deriv = deepcopy(weights_deriv)
-                total_fc_bias_deriv = deepcopy(fc_bias_deriv)
-                total_cv_bias_deriv = deepcopy(cv_bias_deriv)
-                total_kernels_deriv = deepcopy(kernels_deriv)
+                total_weights_deriv = weights_deriv
+                total_fc_bias_deriv = fc_bias_deriv
+                total_cv_bias_deriv = cv_bias_deriv
+                total_kernels_deriv = kernels_deriv
 
             else:
                 for i in range(net.n_cv_layers):
@@ -368,8 +371,8 @@ def __get_fc_delta(net, t, fc_inputs, fc_outputs):
     return delta
 
 def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
-    # cv_inputs: feature volume a cui è stata applicata la convoluzione (senza ReLU)
-    # cv_outputs: feature volume a cui è stato applicato il pooling
+    # cv_inputs: feature volumes a cui è stata applicata la convoluzione (senza ReLU)
+    # cv_outputs: feature volumes a cui è stato applicato il pooling
 
     conv_delta = [0] * net.n_cv_layers
     pooling_delta = [0] * net.n_cv_layers
@@ -398,7 +401,7 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
 
         last_layer = (l == net.n_cv_layers - 1)
 
-        # calcolo dei delta del layer di pooling
+        # CALCOLO DELTA DEL LAYER DI POOLING
         if not last_layer:
             pooling_delta[l] = np.zeros((pooling_fv.shape[0],
                                          pooling_fv.shape[1],
@@ -439,7 +442,7 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
                         weights_values[:] = []
 
 
-        # calcolo dei delta del layer di convoluzione
+        # CALCOLO DELTA DEL LAYER DI CONVOLUZIONE
         conv_delta[l] = np.zeros((conv_fv.shape[0],
                                   conv_fv.shape[1],
                                   conv_fv.shape[2]))
@@ -513,11 +516,13 @@ def __get_cv_weights_bias_deriv(net, x, cv_delta, cv_outputs):
 
         padded_pred_pooling_fv = net.padding(prev_pooling_fv)
 
-        # calcolo derivate dei bias
+        # CALCOLO DERIVATE DEI BIAS
         fv_bias_deriv = conv_delta
-        bias_deriv.append(fv_bias_deriv.copy())
+        fv_bias_deriv = fv_bias_deriv.flatten()
+        fv_bias_deriv = fv_bias_deriv.reshape(-1, 1)
+        bias_deriv.append(fv_bias_deriv)
 
-        # calcolo derivate dei kernel
+        # CALCOLO DEIRVATE DEI KERNEL
         n_kernels = layer_kernels.shape[0]
         kernel = layer_kernels[0, :, :, :]
 
@@ -563,7 +568,7 @@ def __get_cv_weights_bias_deriv(net, x, cv_delta, cv_outputs):
                         delta_values[:] = []
                         x_values[:] = []
 
-        kernels_deriv.append(layer_kernels_deriv.copy())
+        kernels_deriv.append(layer_kernels_deriv)
 
     # le derivate sono liste aventi una matrice quadrimensionale per ogni layer
     return kernels_deriv, bias_deriv
@@ -582,9 +587,5 @@ def conv_back_propagation(net, x, t):
 
     fc_weights_deriv, fc_bias_deriv =  __get_fc_weights_bias_deriv(net, flattened_input, fc_delta, fc_outputs)
     cv_kernels_deriv, cv_bias_deriv = __get_cv_weights_bias_deriv(net, x, conv_delta, cv_outputs)
-
-    for i in range(net.n_cv_layers):
-        cv_bias_deriv[i] = cv_bias_deriv[i].flatten()
-        cv_bias_deriv[i] = cv_bias_deriv[i].reshape(-1, 1)
 
     return fc_weights_deriv, fc_bias_deriv, cv_kernels_deriv, cv_bias_deriv

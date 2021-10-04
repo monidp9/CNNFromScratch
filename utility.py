@@ -1,7 +1,9 @@
-from functions import identity
 import numpy as np
 import sys
 import os
+
+from sklearn.metrics import accuracy_score
+
 
 n_activation_functions = 3
 n_error_functions = 3
@@ -190,3 +192,14 @@ def convert_to_cnn_input(X, image_size):
         new_X[i] = X[:, i].reshape(image_size, image_size)
 
     return new_X
+
+def get_metric_value(y, t, metric):
+    pred = np.argmax(y, axis=0)
+    target = np.argmax(t, axis=0)
+
+    pred = pred.tolist()
+    target = target.tolist()
+
+    if metric == 'accuracy':
+        return accuracy_score(pred, target)
+

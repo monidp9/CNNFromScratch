@@ -25,7 +25,7 @@ X,t = utility.get_random_dataset(X,t,1000)
 
 X = utility.get_scaled_data(X)
 
-X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.10)
+X_train, X_test, t_train, t_test = utility.train_test_split(X,t,0.25)
 
 y_train = net.sim(X_train)
 print("errore prima su train: ",fun.error_functions[net.error_fun_code](y_train, t_train))

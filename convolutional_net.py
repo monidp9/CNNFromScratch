@@ -6,7 +6,6 @@ import functions as fun
 import utility
 
 
-
 class ConvolutionalNet:
     def __init__(self, n_cv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code):
         self.n_input_nodes = 784
@@ -58,9 +57,11 @@ class ConvolutionalNet:
             if i == 0:
                 n_nodes_input = self.get_n_nodes_feature_volume(self.n_cv_layers)
 
-                self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i], n_nodes_input)))
+                self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i],
+                                                                      n_nodes_input)))
             else:
-                self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i], self.nodes_per_layer[i-1])))
+                self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i],
+                                                                self.nodes_per_layer[i-1])))
 
             self.fc_bias.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i], 1)))
 
@@ -295,9 +296,9 @@ class ConvolutionalNet:
             pred_values.append(fc_outputs[self.n_fc_layers - 1])
 
         pred_values = np.array(pred_values)
-        pred_values = pred_values.squeeze(axis=2)
+        pred_values = pred_values.squeeze()
         pred_values = pred_values.transpose()
-
+        
         return pred_values
 
     def print_config(self):

@@ -1,12 +1,10 @@
 import numpy as np
 import functions as fun
 
-# utilizzare una tupla per input nodi-strati
-
-class Net:
+class MultilayerNet:
     def __init__(self, n_hidden_layers, n_hidden_nodes_per_layer, act_fun_codes, error_fun_code):
-        self.n_input_nodes = 784 # dipende dal dataset: 784
-        self.n_output_nodes = 10 # dipende dal dataset: 10
+        self.n_input_nodes = 784 # dipende dal dataset: mnist_in = 784
+        self.n_output_nodes = 10 # dipende dal dataset: mnist_out = 10
         self.n_layers = n_hidden_layers + 1
 
         self.error_fun_code = error_fun_code
@@ -21,43 +19,41 @@ class Net:
         self.__initialize_weights_and_bias()
 
     def __initialize_weights_and_bias(self):
+        mu, sigma = 0, 0.1
+
         for i in range(self.n_layers):
             if i == 0:
-                self.weights.append(np.random.rand(self.nodes_per_layer[i], self.n_input_nodes) - 0.5)
+                self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i], self.n_input_nodes)))
             else:
-                self.weights.append(np.random.rand(self.nodes_per_layer[i], self.nodes_per_layer[i-1]) - 0.5)
+                self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i], self.nodes_per_layer[i-1])))
 
-            self.bias.append(np.random.rand(self.nodes_per_layer[i], 1) - 0.5)
+            self.bias.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i], 1)))
 
     def forward_step(self, x): 
-        layer_input = list()
-        layer_output = list()
+        layers_input = list()
+        layers_output = list()
 
         for i in range(self.n_layers):
             if i == 0:
-                # calcolo input dei nodi del primo strato nascosto
                 input = np.dot(self.weights[i], x) + self.bias[i]
-                layer_input.append(input)
+                layers_input.append(input)
 
             else:
-                # calcolo input dei nodi di uno strato nascosto generico
-                input = np.dot(self.weights[i], layer_output[i-1]) + self.bias[i]
-                layer_input.append(input)
+                input = np.dot(self.weights[i], layers_output[i-1]) + self.bias[i]
+                layers_input.append(input)
 
             act_fun = fun.activation_functions[self.act_fun_code_per_layer[i]]
             output = act_fun(input)
-            layer_output.append(output)
+            layers_output.append(output)
 
-        return layer_input, layer_output
+        return layers_input, layers_output
 
     def sim(self, x):
         for i in range(self.n_layers):
             if i == 0:
-                # calcolo input dei nodi del primo strato nascosto
                 input = np.dot(self.weights[i], x) + self.bias[i]
 
             else:
-                # calcolo input dei nodi di uno strato nascosto generico
                 input = np.dot(self.weights[i], output) + self.bias[i]
 
             act_fun = fun.activation_functions[self.act_fun_code_per_layer[i]]

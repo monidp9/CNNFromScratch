@@ -36,7 +36,6 @@ def cross_entropy_softmax(y, t):
     softmax_y = softmax(y, axis=0)
     return cross_entropy(softmax_y, t)
 
-
 # derivate funzioni di errore
 def sum_of_squares_deriv(y, t):
     return y - t

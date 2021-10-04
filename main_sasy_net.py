@@ -17,7 +17,7 @@ X, t = mndata.load_training()
 X = utility.get_mnist_data(X)
 t = utility.get_mnist_labels(t)
 
-net = Net(n_hidden_layers=1, n_hidden_nodes_per_layer=[10], act_fun_codes=[1,2], error_fun_code=1)
+net = Net(n_hidden_layers=2, n_hidden_nodes_per_layer=[10, 10], act_fun_codes=[1, 1, 2], error_fun_code=1)
 
 net.print_config()
 

@@ -1,6 +1,4 @@
-from math import sqrt
 from copy import deepcopy
-import matplotlib.pyplot as plt
 import numpy as np
 import functions as fun
 import utility as utl

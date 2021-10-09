@@ -7,7 +7,6 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
 
-
 n_activation_functions = 3
 n_error_functions = 3
 
@@ -49,7 +48,7 @@ def get_nn_type():
     text = ("\nSelect a neural network type: \n"
             "1] Multilayer Neural Network \n"
             "2] Convolutional Neural Network \n\n? ")
-    nn_type = __get_int_input(text)
+    nn_type = __get_int_input(text,1,2)
 
     if nn_type != 1 and nn_type != 2:
         raise ValueError('Invalid choise')

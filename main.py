@@ -1,7 +1,6 @@
 from utility import get_nn_type
 import cv_main
 import fc_main
-import os
 
 nn_type = get_nn_type()
 

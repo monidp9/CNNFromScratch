@@ -1,2 +1,0 @@
-per ora numero di samples considerati = 1000
-paramentri di default utilizzati non esplicitati ( farlo in documentazione )

@@ -41,8 +41,8 @@ def __get_int_input(string, min_value=0, max_value=sys.maxsize) :
     return int(value)
 
 def is_standard_conf():
-    print('\n\n')
     choice =  __get_int_input('Do you want to use the default configuration? (Y=1 / N=0): ',0,1)
+    os.system('clear')
     return choice
 
 def get_nn_type():
@@ -54,6 +54,7 @@ def get_nn_type():
     if nn_type != 1 and nn_type != 2:
         raise ValueError('Invalid choise')
     
+    os.system('clear')
     return 'fc_nn' if nn_type == 1 else 'cv_nn'
 
 def get_conf_ml_net():
@@ -101,28 +102,31 @@ def get_conf_cv_net():
 
     n_cv_layers = __get_int_input('define the number of convolutional layers (min value = 1): ',min_value=1)
 
-    print('\nfor each convolutional layer define the number of kernels\n')
+    # print('\nfor each convolutional layer define the number of kernels\n')
 
     n_kernels_per_layer = list()
     act_fun_codes = list()
 
+    print('\n')
     for i in range(n_cv_layers):
-        print('convlutional layer', i+1, ':')
+        print('convlutional layer', i+1)
 
         n_kernels= __get_int_input('-  number of kernels: ',1)
         n_kernels_per_layer.append(int(n_kernels))
    
-    print("\nfor full connected layers define the numbers of nodes and the activation function")
+    # print("\nfor full connected layers define the numbers of nodes and the activation function")
     __types_of_activation_functions()
 
     print('hidden layer :')
-    act_fun_code = __get_int_input('-  choose activaction function for hidden layer: ',1, n_activation_functions) - 1
+    # act_fun_code = __get_int_input('-  choose activaction function for hidden layer: ',1, n_activation_functions) - 1
+    act_fun_code = __get_int_input('-  activaction function: ',1, n_activation_functions) - 1
     act_fun_codes.append(act_fun_code)
 
     n_hidden_nodes= __get_int_input('-  number of nodes: ',1)
 
     print('\noutput layer :')
-    act_fun_code = __get_int_input('-  choose activaction function for output layer: ',1, n_activation_functions) - 1
+    # act_fun_code = __get_int_input('-  choose activaction function for output layer: ',1, n_activation_functions) - 1
+    act_fun_code = __get_int_input('-  activaction function: ',1, n_activation_functions) - 1
     act_fun_codes.append(act_fun_code)
 
     __types_of_error_functions()
@@ -154,7 +158,7 @@ def get_random_dataset(X, t, n_samples=10000):
     n_tot_samples = X.shape[1]
     n_samples_not_considered = n_tot_samples - n_samples
 
-    new_dataset = np.array([1] * n_samples + [0] * n_samples_not_considered )
+    new_dataset = np.array([1] * n_samples + [0] * n_samples_not_considered)
     np.random.shuffle(new_dataset) 
 
     index = np.where(new_dataset == 1)

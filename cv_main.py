@@ -18,7 +18,7 @@ def run():
     X = utl.get_mnist_data(X)
     t = utl.get_mnist_labels(t)
 
-    X,t = utl.get_random_dataset(X,t,10000) 
+    X, t = utl.get_random_dataset(X,t,2000) 
     X = utl.get_scaled_data(X)
 
     X_train, X_test, t_train, t_test = utl.train_test_split(X, t, test_size = 0.25)
@@ -27,6 +27,7 @@ def run():
     if not utl.is_standard_conf(): 
         n_cv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code = utl.get_conf_cv_net()
 
+    print(X_train.shape, X_test.shape, X_val.shape)
     net = ConvolutionalNet(n_cv_layers = n_cv_layers, 
                            n_kernels_per_layer = n_kernels_per_layer,
                            n_hidden_nodes = n_hidden_nodes, 

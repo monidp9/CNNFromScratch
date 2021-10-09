@@ -5,8 +5,6 @@ import os
 
 nn_type = get_nn_type()
 
-os.system('clear')
-
 if nn_type == 'fc_nn':
 	fc_main.run()
 else:

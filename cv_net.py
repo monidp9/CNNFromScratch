@@ -308,7 +308,7 @@ class ConvolutionalNet:
 
         print('\n')
         for i in range(len(self.n_kernels_per_layer)):
-            print('• conv layer {}: {:>11} kernels'.format(i, self.n_kernels_per_layer[i]))
+            print('• conv layer {}: {:>11} kernels'.format(i + 1, self.n_kernels_per_layer[i]))
 
         error_fun = fun.error_functions[self.error_fun_code]
         error_fun = error_fun.__name__

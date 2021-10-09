@@ -45,6 +45,17 @@ def is_standard_conf():
     choice =  __get_int_input('Do you want to use the default configuration? (Y=1 / N=0): ',0,1)
     return choice
 
+def get_nn_type():
+    text = ("\nSelect a neural network type: \n"
+            "1] Multilayer Neural Network \n"
+            "2] Convolutional Neural Network \n\n? ")
+    nn_type = __get_int_input(text)
+
+    if nn_type != 1 and nn_type != 2:
+        raise ValueError('Invalid choise')
+    
+    return 'fc_nn' if nn_type == 1 else 'cv_nn'
+
 def get_conf_ml_net():
     print('\n\n\n')
     print('-'*40, 'NEURAL NETWORK PROJECT', '-'*40, '\n'

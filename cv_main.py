@@ -6,8 +6,8 @@ from mnist import MNIST
 
 def run():
     # parametri di default 
-    n_cv_layers = 2
-    n_kernels_per_layer = [1, 1]
+    n_cv_layers = 1
+    n_kernels_per_layer = [2]
     n_hidden_nodes = 10
     act_fun_codes = [1,2]
     error_fun_code = 1
@@ -27,7 +27,6 @@ def run():
     if not utl.is_standard_conf(): 
         n_cv_layers, n_kernels_per_layer, n_hidden_nodes, act_fun_codes, error_fun_code = utl.get_conf_cv_net()
 
-    print(X_train.shape, X_test.shape, X_val.shape)
     net = ConvolutionalNet(n_cv_layers = n_cv_layers, 
                            n_kernels_per_layer = n_kernels_per_layer,
                            n_hidden_nodes = n_hidden_nodes, 

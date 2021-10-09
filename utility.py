@@ -49,10 +49,10 @@ def get_nn_type():
     text = ("\nSelect a neural network type: \n"
             "1] Multilayer Neural Network \n"
             "2] Convolutional Neural Network \n\n? ")
-    nn_type = __get_int_input(text)
+    nn_type = __get_int_input(text, min_value=1, max_value=2)
 
     if nn_type != 1 and nn_type != 2:
-        raise ValueError('Invalid choise')
+        raise ValueError('Invalid choice')
     
     os.system('clear')
     return 'fc_nn' if nn_type == 1 else 'cv_nn'
@@ -62,10 +62,7 @@ def get_conf_ml_net():
     print('-'*40, 'NEURAL NETWORK PROJECT', '-'*40, '\n'
      '\t\t\t\t creation of a multilayer neural network\n\n\n')
 
-
     n_hidden_layers = __get_int_input('define the number of hidden layers (min value = 1): ',min_value=1)
-
-    print('\nfor each hidden layer define the number of internal nodes and the activation functions.')
 
     n_hidden_nodes_per_layer = list()
     act_fun_codes = list()
@@ -73,18 +70,18 @@ def get_conf_ml_net():
     __types_of_activation_functions()
 
     for i in range(n_hidden_layers):
-        print('hidden layer', i+1, ':')
+        print('hidden layer', i+1)
 
         n_nodes = __get_int_input('-  number of nodes: ',1)
         n_hidden_nodes_per_layer.append(int(n_nodes))
 
-        act_fun_code = __get_int_input('-  choose activaction function: ',1, n_activation_functions) - 1
+        act_fun_code = __get_int_input('-  activaction function: ',1, n_activation_functions) - 1
         act_fun_codes.append(act_fun_code)
 
         print('\n')
 
     print('output layer :')
-    act_fun_code = __get_int_input('-  choose activaction function: ',1, n_activation_functions) - 1
+    act_fun_code = __get_int_input('-  activaction function: ',1, n_activation_functions) - 1
     act_fun_codes.append(act_fun_code)
 
     __types_of_error_functions()
@@ -99,10 +96,7 @@ def get_conf_cv_net():
     print('-'*40, 'NEURAL NETWORK PROJECT', '-'*40, '\n'
      '\t\t\t\t creation of a convolutional neural network\n\n\n')
 
-
     n_cv_layers = __get_int_input('define the number of convolutional layers (min value = 1): ',min_value=1)
-
-    # print('\nfor each convolutional layer define the number of kernels\n')
 
     n_kernels_per_layer = list()
     act_fun_codes = list()
@@ -114,18 +108,15 @@ def get_conf_cv_net():
         n_kernels= __get_int_input('-  number of kernels: ',1)
         n_kernels_per_layer.append(int(n_kernels))
    
-    # print("\nfor full connected layers define the numbers of nodes and the activation function")
     __types_of_activation_functions()
 
     print('hidden layer :')
-    # act_fun_code = __get_int_input('-  choose activaction function for hidden layer: ',1, n_activation_functions) - 1
     act_fun_code = __get_int_input('-  activaction function: ',1, n_activation_functions) - 1
     act_fun_codes.append(act_fun_code)
 
     n_hidden_nodes= __get_int_input('-  number of nodes: ',1)
 
     print('\noutput layer :')
-    # act_fun_code = __get_int_input('-  choose activaction function for output layer: ',1, n_activation_functions) - 1
     act_fun_code = __get_int_input('-  activaction function: ',1, n_activation_functions) - 1
     act_fun_codes.append(act_fun_code)
 

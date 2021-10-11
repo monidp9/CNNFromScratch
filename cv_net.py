@@ -236,7 +236,7 @@ class ConvolutionalNet:
 
         return cv_inputs, cv_outputs
 
-    def __fc_forward_step(self, x) :
+    def __fc_forward_step(self, x):
         fc_layers_inputs = list()
         fc_layers_outputs = list()
 
@@ -274,9 +274,7 @@ class ConvolutionalNet:
 
         for i in range(n_instances) :
             _, cv_outputs = self.__cv_forward_step(X[i])
-
-            input_for_fc = cv_outputs[self.n_cv_layers - 1].flatten()
-            input_for_fc = input_for_fc.reshape(-1, 1)
+            input_for_fc = cv_outputs[self.n_cv_layers - 1].flatten().reshape(-1, 1)
 
             _, fc_outputs = self.__fc_forward_step(input_for_fc)
 

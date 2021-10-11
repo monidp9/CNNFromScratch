@@ -70,14 +70,15 @@ def __cv_RPROP(net, struct, eta_min, eta_max, delta_min, delta_max, epoch):
         layer_kernels = net.kernels[l]
         layer_kernels_delta = struct.kernels_delta[l]
 
-        for k in range(net.n_kernels_per_layer[l]) :        # h indice che scorre sui vari kernel del layer
+        # indice che corre sui vari kernel del layer
+        for k in range(net.n_kernels_per_layer[l]) :
             kernels_z_axis_size = layer_kernels_deriv_prev_epoch[k].shape[0]
 
             for z in range(kernels_z_axis_size) :
                 for i in range(net.KERNEL_SIZE) :
                     for j in range(net.KERNEL_SIZE) :
 
-                        if layer_kernels_deriv_prev_epoch[k,z,i,j] * layer_kernels_deriv[k,z,i,j] > 0 :         # problema delta
+                        if layer_kernels_deriv_prev_epoch[k,z,i,j] * layer_kernels_deriv[k,z,i,j] > 0 :
                             layer_kernels_delta[k,z,i,j] = min(delta_max, eta_max * layer_kernels_delta[k,z,i,j])
 
                         if layer_kernels_deriv_prev_epoch[k,z,i,j] * layer_kernels_deriv[k,z,i,j] < 0 :
@@ -258,7 +259,7 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
     conv_delta = [0] * net.n_cv_layers
     pooling_delta = [0] * net.n_cv_layers
 
-    # riporto i delta dell'ultimo strato nella versione matriciale
+    # i delta dell'ultimo strato sono riportati nella versione matriciale
     index = 0
     pooling_fv = cv_outputs[net.n_cv_layers - 1]
     depth, rows, columns = pooling_fv.shape[0], pooling_fv.shape[1], pooling_fv.shape[2]
@@ -323,7 +324,7 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
                         weights_values[:] = []
 
 
-        # calcolo delta del layer di convoluzione 
+        # CALCOLO DELTA LAYER DI CONVOLUZIONE
         conv_delta[l] = np.zeros((conv_fv.shape[0],
                                   conv_fv.shape[1],
                                   conv_fv.shape[2]))

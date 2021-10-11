@@ -1,5 +1,6 @@
 import numpy as np
 import functions as fun
+import os
 
 class MultilayerNet:
     def __init__(self, n_hidden_layers, n_hidden_nodes_per_layer, act_fun_codes, error_fun_code):
@@ -52,7 +53,6 @@ class MultilayerNet:
         for i in range(self.n_layers):
             if i == 0:
                 input = np.dot(self.weights[i], x) + self.bias[i]
-
             else:
                 input = np.dot(self.weights[i], output) + self.bias[i]
 
@@ -62,8 +62,11 @@ class MultilayerNet:
         return output
 
     def print_config(self):
+        _, columns = os.popen('stty size', 'r').read().split()
+        columns = int(columns)
+
         print('\n\n\nYOUR MULTILAYER NETWORK')
-        print('-'*100)
+        print('-' * columns)
 
         print("• input layer: {:>11} nodes".format(self.n_input_nodes))
 
@@ -84,5 +87,5 @@ class MultilayerNet:
 
         print("\n {} (error function)".format(error_fun))
 
-        print('-'*100)
+        print('-' * columns)
         print('\n')

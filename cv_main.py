@@ -34,6 +34,7 @@ def run():
                            error_fun_code = error_fun_code)
 
     net.print_config()
+    
     batch_learning(net, X_train, t_train, X_val, t_val)
     y_test = net.sim(X_test)
     utl.print_result(y_test,t_test)

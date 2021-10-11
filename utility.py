@@ -57,9 +57,17 @@ def get_nn_type():
     return 'fc_nn' if nn_type == 1 else 'cv_nn'
 
 def get_conf_ml_net():
-    print('\n\n\n')
-    print('-'*40, 'NEURAL NETWORK PROJECT', '-'*40, '\n'
-     '\t\t\t\t creation of a multilayer neural network\n\n\n')
+    _, columns = os.popen('stty size', 'r').read().split()
+    columns = int(columns)
+
+    title = 'NEURAL NETWORK PROJECT'
+    sub_title = 'creation of a multilayer neural network'
+
+    title_space = int((columns - (len(title) + 2)) / 2) 
+    sub_title_space = int((columns - len(sub_title)) / 2)
+
+    print('\n\n')
+    print('-' * title_space, title, '-' * title_space, ' ' * sub_title_space, sub_title, '\n')
 
     n_hidden_layers = __get_int_input('define the number of hidden layers (min value = 1): ',min_value=1)
 
@@ -91,9 +99,17 @@ def get_conf_ml_net():
     return n_hidden_layers, n_hidden_nodes_per_layer, act_fun_codes, error_fun_code
 
 def get_conf_cv_net():
-    print('\n\n\n')
-    print('-'*40, 'NEURAL NETWORK PROJECT', '-'*40, '\n'
-     '\t\t\t\t creation of a convolutional neural network\n\n\n')
+    _, columns = os.popen('stty size', 'r').read().split()
+    columns = int(columns)
+
+    title = 'NEURAL NETWORK PROJECT'
+    sub_title = 'creation of a convolutional neural network'
+
+    title_space = int((columns - (len(title) + 2)) / 2) 
+    sub_title_space = int((columns - len(sub_title)) / 2)
+
+    print('\n\n')
+    print('-' * title_space, title, '-' * title_space, ' ' * sub_title_space, sub_title, '\n')
 
     n_cv_layers = __get_int_input('define the number of convolutional layers (min value = 1): ',min_value=1)
 

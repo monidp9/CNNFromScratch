@@ -2,6 +2,7 @@ from copy import deepcopy
 import numpy as np
 import functions as fun
 import utility as utl
+import os
 
 
 class ConvolutionalNet:
@@ -228,8 +229,7 @@ class ConvolutionalNet:
             act_fun = fun.activation_functions[self.CONV_ACT_FUN_CODE]
             output = act_fun(conv_x)
 
-            # teoricamente bisognerebbe applicare la funzione di attivazione che in questo
-            # caso è la funzione identità quindi non viene considerata
+            # la funzione di attivazione non è esplicitata perché è l'identità
             pooled_x = self.__max_pooling(output, self.POOLING_SIZE)
 
             cv_outputs.append(pooled_x)
@@ -287,8 +287,11 @@ class ConvolutionalNet:
         return pred_values
 
     def print_config(self):
+        _, columns = os.popen('stty size', 'r').read().split()
+        columns = int(columns)
+
         print('\n\n\nYOUR CONVOLUTIONAL NETWORK')
-        print('-'*100)
+        print('-' * columns)
 
         print("• input layer: {:>12} nodes".format(self.n_input_nodes))
 
@@ -311,5 +314,5 @@ class ConvolutionalNet:
 
         print("\n {} (error function)".format(error_fun))
 
-        print('-'*100)
+        print('-' * columns)
         print('\n')

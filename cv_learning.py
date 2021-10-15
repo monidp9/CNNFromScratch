@@ -282,13 +282,13 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
 
         last_layer = (l == net.n_cv_layers - 1)
 
+        act_fun_deriv = fun.activation_functions_deriv[net.CONV_ACT_FUN_CODE]
+
         # CALCOLO DELTA DEL LAYER DI POOLING
         if not last_layer:
             pooling_delta[l] = np.zeros((pooling_fv.shape[0],
                                          pooling_fv.shape[1],
                                          pooling_fv.shape[2]))
-
-            act_fun_deriv = fun.activation_functions_deriv[net.CONV_ACT_FUN_CODE]
 
             # i kernel del layer sono quelli applicati e non quelli da applicare
             layer_kernels = net.kernels[l + 1]            
@@ -354,7 +354,7 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
                             node = nodes_region[r, c]
                             node = act_fun(node)
                             if node == max_node:
-                                delta_region[r, c] = layer_pooling_delta[d, row, column]
+                                delta_region[r, c] = act_fun_deriv(node) * layer_pooling_delta[d, row, column]
 
                     column += 1
                 column = 0

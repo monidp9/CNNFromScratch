@@ -3,7 +3,6 @@ import utility as utl
 from cv_net import ConvolutionalNet
 from mnist import MNIST
 
-
 def run():
     # parametri di default 
     n_cv_layers = 1

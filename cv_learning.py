@@ -35,9 +35,8 @@ class rprop_info:
             self.kernels_delta.append(kernel_delta)
 
             kernel_depth = net.n_kernels_per_layer[i]
-            n_nodes_fv = net.get_n_nodes_feature_volume_pre_pooling(i)
 
-            bias_delta = np.full((n_nodes_fv, 1), 0.0125)
+            bias_delta = np.full((n_kernels, 1), 0.0125)
             self.cv_bias_delta.append(bias_delta)
 
         for i in range(net.n_fc_layers):
@@ -167,7 +166,7 @@ def __RPROP(net, str_rprop, eta_min, eta_max, delta_min, delta_max, epoch):
 
 # ------------------------------------------------------------- BATCH LEARNING --------------------------------------------------------
 def batch_learning(net, X_train, t_train, X_val, t_val, 
-                    eta_min = 0.01, eta_max = 1.2, delta_min = 1e-06, delta_max = 50, n_epochs = 100):
+                    eta_min = 0.005, eta_max = 1.2, delta_min = 1e-06, delta_max = 50, n_epochs = 100):
     
     train_errors, val_errors = list(), list()
 
@@ -399,12 +398,17 @@ def __get_cv_weights_bias_deriv(net, x, cv_delta, cv_outputs):
         padded_pred_pooling_fv = net.padding(prev_pooling_fv)
 
         # CALCOLO DERIVATE DEI BIAS
-        fv_bias_deriv = conv_delta
-        fv_bias_deriv = fv_bias_deriv.flatten()
-        fv_bias_deriv = fv_bias_deriv.reshape(-1, 1)
-        bias_deriv.append(fv_bias_deriv)
+        temp_deriv = []
+        for k in range(layer_kernels.shape[0]):
+            db = np.sum(conv_delta[k, :, :])
+            temp_deriv.append(db)
 
-        # CALCOLO DEIRVATE DEI KERNEL
+        temp_deriv = np.array(temp_deriv)
+        temp_deriv = temp_deriv.reshape(-1, 1)
+        bias_deriv.append(temp_deriv)
+
+
+        # CALCOLO DERIVATE DEI KERNEL
         n_kernels = layer_kernels.shape[0]
         kernel = layer_kernels[0, :, :, :]
 

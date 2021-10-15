@@ -36,29 +36,30 @@ class ConvolutionalNet:
         self.__initialize_weights_and_fc_bias()
 
     def __initialize_kernels_and_cv_bias(self):
-        dim_kernels_per_layer = 1 
+        kernel_depth = 1
+        kernel_rows = self.KERNEL_SIZE
+        kernel_columns = self.KERNEL_SIZE
+
         mu, sigma = 0, 0.1
 
         for i in range(self.n_cv_layers):
-            self.kernels.append(np.random.normal(mu, sigma, size=(self.n_kernels_per_layer[i], dim_kernels_per_layer,
-                                                                  self.KERNEL_SIZE, self.KERNEL_SIZE)))
 
-            dim_kernels_per_layer = self.n_kernels_per_layer[i]
-            n_nodes_conv_layer = self.get_n_nodes_feature_volume_pre_pooling(i)
+            n_kernels = self.n_kernels_per_layer[i]
 
-            self.cv_bias.append(np.random.normal(mu, sigma, size=(n_nodes_conv_layer, 1)))
+            self.kernels.append(np.random.normal(mu, sigma, size=(n_kernels, kernel_depth, kernel_rows, kernel_columns)))
+            self.cv_bias.append(np.random.normal(mu, sigma, size=(n_kernels, 1)))
+
+            kernel_depth = n_kernels
 
     def __initialize_weights_and_fc_bias(self):
         mu, sigma = 0, 0.1
         for i in range(self.n_fc_layers):
             if i == 0:
                 n_nodes_input = self.get_n_nodes_feature_volume(self.n_cv_layers)
+                self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i], n_nodes_input)))
 
-                self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i],
-                                                                      n_nodes_input)))
             else:
-                self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i],
-                                                                self.nodes_per_layer[i-1])))
+                self.weights.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i], self.nodes_per_layer[i-1])))
 
             self.fc_bias.append(np.random.normal(mu, sigma, size=(self.nodes_per_layer[i], 1)))
 
@@ -75,26 +76,6 @@ class ConvolutionalNet:
             W = max_pooling_op_output
 
         n_nodes = np.power(W, 2) * self.n_kernels_per_layer[n_conv_layer-1]
-
-        return n_nodes
-
-    def get_n_nodes_feature_volume_pre_pooling(self, n_conv_layer):
-        W = self.MNIST_IMAGE_SIZE
-        F = self.KERNEL_SIZE
-        Fp = self.POOLING_SIZE
-        P = self.PADDING
-        S = self.STRIDE
-
-        for i in range(n_conv_layer + 1) :
-            if i != n_conv_layer:
-                conv_op_output = round((W - F + 2*P) / S) + 1
-                max_pooling_op_output = round((conv_op_output - Fp) / Fp) + 1
-                W = max_pooling_op_output
-            else:
-                conv_op_output = round((W - F + 2*P) / S) + 1
-                W = conv_op_output
-
-        n_nodes = np.power(W, 2) * self.n_kernels_per_layer[n_conv_layer]
 
         return n_nodes
 
@@ -135,7 +116,7 @@ class ConvolutionalNet:
 
         return padded_feature_volume
 
-    def __convolution(self, feature_volume, layer_kernels, bias):
+    def __convolution(self, feature_volume, layer_kernels, layer_bias):
         # layer_kernels: matrice quadrimensionale del layer
 
         feature_volume = self.padding(feature_volume)
@@ -145,7 +126,6 @@ class ConvolutionalNet:
         n_rows = feature_volume.shape[1]
         n_columns = feature_volume.shape[2]
 
-        b_index = 0
         n_kernels = layer_kernels.shape[0]
         feature_map = list()
         feature_map_row = list()
@@ -155,6 +135,7 @@ class ConvolutionalNet:
             kernel = layer_kernels[k]
             k_rows = kernel.shape[1]
             k_columns = kernel.shape[2]
+            bias = layer_bias[k][0]
 
             for i in range(1, n_rows - 1, self.STRIDE):
                 row_start = i - 1
@@ -167,8 +148,7 @@ class ConvolutionalNet:
                     region = feature_volume[:, row_start:row_finish, column_start:column_finish]
 
                     region = np.multiply(region, kernel)
-                    node = np.sum(region) + bias[b_index][0]
-                    b_index += 1
+                    node = np.sum(region) + bias
 
                     feature_map_row.append(node)
 
@@ -179,7 +159,6 @@ class ConvolutionalNet:
             feature_map[:] = []
 
         conv_feature_volume = np.array(conv_feature_volume)
-        conv_feature_volume = np.round(conv_feature_volume, 3)
         return conv_feature_volume
 
     def __max_pooling(self, feature_volume, region_size):

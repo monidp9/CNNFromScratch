@@ -166,7 +166,7 @@ def __RPROP(net, str_rprop, eta_min, eta_max, delta_min, delta_max, epoch):
 
 # ------------------------------------------------------------- BATCH LEARNING --------------------------------------------------------
 def batch_learning(net, X_train, t_train, X_val, t_val, 
-                    eta_min = 0.005, eta_max = 1.2, delta_min = 1e-06, delta_max = 50, n_epochs = 100):
+                    eta_min = 0.01, eta_max = 1.2, delta_min = 1e-06, delta_max = 50, n_epochs = 100):
     
     train_errors, val_errors = list(), list()
 
@@ -306,15 +306,22 @@ def __get_cv_delta(net, cv_inputs, cv_outputs, flattened_delta):
                     for j in range(n_columns):
                         node_value = pooling_fv[d, i, j]
                         indexes = [(i - 1, j - 1), (i - 1, j), (i - 1, j + 1), \
-                                   (i + 1, j - 1), (i + 1, j), (i + 1, j + 1), \
-                                   (i, j - 1),     (i, j),     (i, j + 1)]
+                                   (i, j - 1),     (i, j),     (i, j + 1), \
+                                   (i + 1, j - 1), (i + 1, j), (i + 1, j + 1)]
 
+                        k_row, k_col = 2, 2
                         for r, c in indexes:
                             if (r >= 0 and c >= 0) and (r < n_rows and c < n_columns):
                                 for k in range(n_kernels):
                                     kernel = layer_kernels[k]
                                     delta_values.append(succ_conv_delta[k, r, c])
-                                    weights_values.append(kernel[d, (1 + r) % 3, (1 + c) % 3])
+                                    weights_values.append(kernel[d, k_row, k_col])
+
+                            if k_col > 0:
+                                k_col -= 1
+                            else:
+                                k_col = 2
+                                k_row -= 1
 
                         node_delta = act_fun_deriv(node_value) * np.sum(np.multiply(delta_values, weights_values))
                         layer_pooling_delta[d, i, j] = node_delta

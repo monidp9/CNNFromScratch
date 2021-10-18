@@ -6,7 +6,7 @@ from mnist import MNIST
 def run():
     # parametri di default 
     n_cv_layers = 1
-    n_kernels_per_layer = [2]
+    n_kernels_per_layer = [3]
     n_hidden_nodes = 10
     act_fun_codes = [1,2]
     error_fun_code = 1

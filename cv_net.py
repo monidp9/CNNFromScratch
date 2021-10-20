@@ -161,12 +161,10 @@ class ConvolutionalNet:
         conv_feature_volume = np.array(conv_feature_volume)
         return conv_feature_volume
 
-    def __max_pooling(self, feature_volume, region_size):
+    def __max_pooling(self, feature_volume, stride):
         depth = feature_volume.shape[0]
         n_rows = feature_volume.shape[1]
         n_columns = feature_volume.shape[2]
-
-        stride = region_size
 
         pooled_feature_volume = list()
         feature_map = list()

@@ -8,15 +8,15 @@ from copy import deepcopy
 
 class rprop_info:
     def __init__(self, net):
-        self.kernels_deriv = list()
-        self.weights_deriv = list()
-        self.cv_bias_deriv = list()
-        self.fc_bias_deriv = list()
+        self.kernels_deriv = None
+        self.weights_deriv = None
+        self.cv_bias_deriv = None
+        self.fc_bias_deriv = None
 
-        self.kernels_deriv_per_epochs = list()
-        self.weights_deriv_per_epochs = list()
-        self.cv_bias_deriv_per_epochs = list()
-        self.fc_bias_deriv_per_epochs = list()
+        self.kernels_deriv_prev_epoch = None
+        self.weights_deriv_prev_epoch = None
+        self.cv_bias_deriv_prev_epoch = None 
+        self.fc_bias_deriv_prev_epoch = None
 
         self.kernels_delta = list()
         self.weights_delta = list()
@@ -59,12 +59,10 @@ class rprop_info:
         self.fc_bias_deriv = tot_fc_bias_deriv
 
 def __cv_RPROP(net, struct, eta_min, eta_max, delta_min, delta_max, epoch):
-    kernels_deriv_prev_epoch = struct.kernels_deriv_per_epochs[epoch-1]
-    cv_bias_deriv_prev_epoch = struct.cv_bias_deriv_per_epochs[epoch-1]
 
     for l in range(net.n_cv_layers) :
 
-        layer_kernels_deriv_prev_epoch = kernels_deriv_prev_epoch[l]
+        layer_kernels_deriv_prev_epoch = struct.kernels_deriv_prev_epoch[l]
         layer_kernels_deriv = struct.kernels_deriv[l]
         layer_kernels = net.kernels[l]
         layer_kernels_delta = struct.kernels_delta[l]
@@ -85,7 +83,7 @@ def __cv_RPROP(net, struct, eta_min, eta_max, delta_min, delta_max, epoch):
 
                         layer_kernels[k,z,i,j] = layer_kernels[k,z,i,j] - np.sign(layer_kernels_deriv[k,z,i,j]) * layer_kernels_delta[k,z,i,j]
 
-        layer_cv_bias_deriv_prev_epoch = cv_bias_deriv_prev_epoch[l]
+        layer_cv_bias_deriv_prev_epoch = struct.cv_bias_deriv_prev_epoch[l]
         layer_cv_bias_deriv = struct.cv_bias_deriv[l]
         layer_cv_bias = net.cv_bias[l]
         layer_cv_bias_delta = struct.cv_bias_delta[l]
@@ -102,15 +100,13 @@ def __cv_RPROP(net, struct, eta_min, eta_max, delta_min, delta_max, epoch):
     return net
 
 def __fc_RPROP(net, struct, eta_min, eta_max, delta_min, delta_max, epoch):
-    weights_deriv_prev_epoch = struct.weights_deriv_per_epochs[epoch-1]
-    fc_bias_deriv_prev_epoch = struct.fc_bias_deriv_per_epochs[epoch-1]
 
     for l in range(net.n_fc_layers) :
-        layer_weights_deriv_prev_epoch = weights_deriv_prev_epoch[l]
+        layer_weights_deriv_prev_epoch = struct.weights_deriv_prev_epoch[l]
         layer_weights_deriv = struct.weights_deriv[l]
         layer_weights_delta = struct.weights_delta[l]
 
-        layer_fc_bias_deriv_prev_epoch = fc_bias_deriv_prev_epoch[l]
+        layer_fc_bias_deriv_prev_epoch = struct.fc_bias_deriv_prev_epoch[l]
         layer_fc_bias_deriv = struct.fc_bias_deriv[l]
         layer_fc_bias_delta = struct.fc_bias_delta[l]
 
@@ -157,10 +153,10 @@ def __RPROP(net, str_rprop, eta_min, eta_max, delta_min, delta_max, epoch):
         net = __cv_RPROP(net, str_rprop, eta_min, eta_max, delta_min, delta_max, epoch)
         net = __fc_RPROP(net, str_rprop, eta_min, eta_max, delta_min, delta_max, epoch)
 
-    str_rprop.kernels_deriv_per_epochs.append(str_rprop.kernels_deriv)
-    str_rprop.cv_bias_deriv_per_epochs.append(str_rprop.cv_bias_deriv)
-    str_rprop.weights_deriv_per_epochs.append(str_rprop.weights_deriv)
-    str_rprop.fc_bias_deriv_per_epochs.append(str_rprop.fc_bias_deriv)
+    str_rprop.kernels_deriv_prev_epoch = str_rprop.kernels_deriv
+    str_rprop.cv_bias_deriv_prev_epoch = str_rprop.cv_bias_deriv
+    str_rprop.weights_deriv_prev_epoch = str_rprop.weights_deriv
+    str_rprop.fc_bias_deriv_prev_epoch = str_rprop.fc_bias_deriv
 
     return net, str_rprop
 
